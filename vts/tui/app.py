@@ -652,6 +652,36 @@ class App:
         elif it.kind in ("video", "short"):
             self.push(S.video(self, it["id"]))
 
+    def open_link(self, q):
+        """
+        a link or a @handle typed in the search box opens what it names
+        (YouTube's search often finds nothing for them): whether it was one
+        """
+        from vts import channel as ch
+        from vts import video as video_mod
+        from vts.tui import screens as S
+        q = q.strip()
+        if not q or any(c.isspace() for c in q):
+            return False
+        link = "/" in q or "youtu" in q
+        if link and video_mod.ref(q):
+            self.push(S.video(self, video_mod.ref(q)))
+            return True
+        if link and ch.playlist_ref(q):
+            self.push(S.playlist(self, ch.playlist_ref(q)))
+            return True
+        if not (q.startswith("@") or (link and any(
+                k in q for k in ("/@", "/channel/", "/c/", "/user/")))):
+            return False
+        self.busy(f"Looking for {q}...")
+        try:
+            ident = ch.resolve(self.yt, q)
+        except YouTubeError as e:
+            self.failed(e)
+            return True
+        self.push(S.channel(self, ident))
+        return True
+
     def stop_player(self):
         """whether mpv ended on its own without playing (said)"""
         if not self.player:
@@ -1167,7 +1197,8 @@ class App:
                     self.lib.search_add(q)
                 except LibError:
                     pass
-                self.push(S.search(self, q))
+                if not self.open_link(q):
+                    self.push(S.search(self, q))
         elif key == "r":
             s.sel = s.top = 0
             s.reload(self)

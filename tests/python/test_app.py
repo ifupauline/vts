@@ -86,6 +86,26 @@ def test_recent_searches(app):
     assert t.keys("\t\r", "Search: linus torvalds"), t.text()
 
 
+def test_search_links(app):
+    # a @handle or a link opens what it names, not a search for its words
+    t = app()
+    t.keys("/")
+    assert t.keys("@kurzgesagt\r", "Kurzgesagt", 10), t.text()
+    assert "Search:" not in t.line(0), t.line(0)
+    # (on a channel, / searches in it: from Home)
+    t.keys("1", "Home")
+    t.keys("/")
+    t.keys("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42\r", None, 0.5)
+    assert t.wait(lambda: "Never Gonna" in t.text()), t.text()
+    t.keys("1", "Home")
+    t.keys("/")
+    t.keys("@nobodyhere\r", None, 0.5)
+    assert t.wait(lambda: "no channel @nobodyhere" in t.text()), t.text()
+    # words still search
+    t.keys("/")
+    assert t.keys("linus torvalds\r", "Search: linus torvalds"), t.text()
+
+
 def test_playback_keys(app):
     t = app()
     t.keys("/")

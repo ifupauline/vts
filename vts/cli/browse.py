@@ -82,6 +82,13 @@ def cmd_search(cfg, argv):
         print_json(page.to_json())
     else:
         print_items(page.items)
+    q = " ".join(args)
+    if not page.items and len(args) == 1 and (q.startswith("@") or
+                                               "youtu" in q):
+        # YouTube's search often finds nothing for those
+        log.warn(f"nothing found; for the channel: vts channel {q}"
+                 if q.startswith("@") else "nothing found; for what the "
+                 f"link names: vts info, vts channel or vts playlist {q}")
     return EXIT_FAIL if failed else EXIT_OK
 
 
