@@ -1,0 +1,479 @@
+{
+  "comment": "Where vts finds things in YouTube's answers. Data only: each field lists paths tried in order, the first that gives a value wins. A path is member names and array positions separated by dots; -1 is the last element, * any element, {a/b} keeps going only from a node that has a.b; a final =VALUE only matches that value. Text is read from strings, simpleText, runs and content.",
+  "version": 1,
+  "revision": 2026111302,
+  "skip": [
+    "adSlotRenderer",
+    "promotedSparklesWebRenderer",
+    "searchPyvRenderer",
+    "promotedVideoRenderer",
+    "topbar",
+    "frameworkUpdates",
+    "responseContext",
+    "header",
+    "menu",
+    "thumbnailOverlays",
+    "unifiedSharePanelRenderer"
+  ],
+  "items": [
+    {
+      "renderer": "videoRenderer",
+      "kind": "video",
+      "fields": {
+        "id": [
+          "videoId"
+        ],
+        "title": [
+          "title"
+        ],
+        "channel": [
+          "longBylineText",
+          "ownerText",
+          "shortBylineText"
+        ],
+        "channel_id": [
+          "longBylineText.runs.0.navigationEndpoint.browseEndpoint.browseId",
+          "longBylineText.runs.0.navigationEndpoint.showDialogCommand.panelLoadingStrategy.inlineContent.dialogViewModel.customContent.listViewModel.listItems.0.listItemViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId",
+          "ownerText.runs.0.navigationEndpoint.browseEndpoint.browseId",
+          "shortBylineText.runs.0.navigationEndpoint.browseEndpoint.browseId"
+        ],
+        "duration": [
+          "lengthText"
+        ],
+        "views": [
+          "viewCountText",
+          "shortViewCountText"
+        ],
+        "published": [
+          "publishedTimeText"
+        ],
+        "thumbnail": [
+          "thumbnail.thumbnails.-1.url"
+        ],
+        "description": [
+          "detailedMetadataSnippets.0.snippetText",
+          "descriptionSnippet"
+        ],
+        "live": [
+          "badges.*.metadataBadgeRenderer.style=BADGE_STYLE_TYPE_LIVE_NOW",
+          "thumbnailOverlays.*.thumbnailOverlayTimeStatusRenderer.style=LIVE"
+        ],
+        "upcoming": [
+          "upcomingEventData.startTime"
+        ]
+      }
+    },
+    {
+      "renderer": "gridVideoRenderer",
+      "kind": "video",
+      "fields": {
+        "id": [
+          "videoId"
+        ],
+        "title": [
+          "title"
+        ],
+        "channel": [
+          "shortBylineText",
+          "ownerText"
+        ],
+        "channel_id": [
+          "shortBylineText.runs.0.navigationEndpoint.browseEndpoint.browseId"
+        ],
+        "duration": [
+          "lengthText",
+          "thumbnailOverlays.*.thumbnailOverlayTimeStatusRenderer.text"
+        ],
+        "views": [
+          "viewCountText",
+          "shortViewCountText"
+        ],
+        "published": [
+          "publishedTimeText"
+        ],
+        "thumbnail": [
+          "thumbnail.thumbnails.-1.url"
+        ],
+        "live": [
+          "badges.*.metadataBadgeRenderer.style=BADGE_STYLE_TYPE_LIVE_NOW"
+        ],
+        "upcoming": [
+          "upcomingEventData.startTime"
+        ]
+      }
+    },
+    {
+      "renderer": "shortsLockupViewModel",
+      "kind": "short",
+      "fields": {
+        "id": [
+          "onTap.innertubeCommand.reelWatchEndpoint.videoId"
+        ],
+        "title": [
+          "overlayMetadata.primaryText",
+          "accessibilityText"
+        ],
+        "views": [
+          "overlayMetadata.secondaryText"
+        ],
+        "thumbnail": [
+          "thumbnailViewModel.thumbnailViewModel.image.sources.0.url",
+          "onTap.innertubeCommand.reelWatchEndpoint.thumbnail.thumbnails.0.url"
+        ]
+      }
+    },
+    {
+      "renderer": "reelItemRenderer",
+      "kind": "short",
+      "fields": {
+        "id": [
+          "videoId"
+        ],
+        "title": [
+          "headline"
+        ],
+        "views": [
+          "viewCountText"
+        ],
+        "thumbnail": [
+          "thumbnail.thumbnails.0.url"
+        ]
+      }
+    },
+    {
+      "renderer": "channelRenderer",
+      "kind": "channel",
+      "fields": {
+        "id": [
+          "channelId"
+        ],
+        "title": [
+          "title"
+        ],
+        "handle": [
+          "navigationEndpoint.browseEndpoint.canonicalBaseUrl"
+        ],
+        "subscribers": [
+          "videoCountText",
+          "subscriberCountText"
+        ],
+        "description": [
+          "descriptionSnippet"
+        ],
+        "thumbnail": [
+          "thumbnail.thumbnails.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "playlistRenderer",
+      "kind": "playlist",
+      "fields": {
+        "id": [
+          "playlistId"
+        ],
+        "title": [
+          "title"
+        ],
+        "channel": [
+          "longBylineText",
+          "shortBylineText"
+        ],
+        "channel_id": [
+          "longBylineText.runs.0.navigationEndpoint.browseEndpoint.browseId"
+        ],
+        "videos": [
+          "videoCountText",
+          "videoCount"
+        ],
+        "thumbnail": [
+          "thumbnails.0.thumbnails.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "lockupViewModel",
+      "when": "contentType=LOCKUP_CONTENT_TYPE_PLAYLIST",
+      "kind": "playlist",
+      "fields": {
+        "id": [
+          "contentId"
+        ],
+        "title": [
+          "metadata.lockupMetadataViewModel.title"
+        ],
+        "channel": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.text.{commandRuns/0/onTap/innertubeCommand/browseEndpoint}",
+          "metadata.lockupMetadataViewModel.{image/decoratedAvatarViewModel}.metadata.contentMetadataViewModel.metadataRows.0.metadataParts.0.text"
+        ],
+        "channel_id": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.text.{commandRuns/0/onTap/innertubeCommand/browseEndpoint}.commandRuns.0.onTap.innertubeCommand.browseEndpoint.browseId",
+          "metadata.lockupMetadataViewModel.image.decoratedAvatarViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId"
+        ],
+        "videos": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.overlays.*.thumbnailOverlayBadgeViewModel.thumbnailBadges.0.thumbnailBadgeViewModel.text"
+        ],
+        "thumbnail": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.image.sources.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "lockupViewModel",
+      "when": "contentType=LOCKUP_CONTENT_TYPE_SHOW",
+      "kind": "playlist",
+      "fields": {
+        "id": [
+          "contentId"
+        ],
+        "title": [
+          "metadata.lockupMetadataViewModel.title"
+        ],
+        "videos": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.overlays.*.thumbnailOverlayBadgeViewModel.thumbnailBadges.0.thumbnailBadgeViewModel.text"
+        ],
+        "thumbnail": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.image.sources.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "lockupViewModel",
+      "when": "contentType=LOCKUP_CONTENT_TYPE_VIDEO",
+      "kind": "video",
+      "fields": {
+        "id": [
+          "contentId"
+        ],
+        "title": [
+          "metadata.lockupMetadataViewModel.title"
+        ],
+        "channel": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.text.{commandRuns/0/onTap/innertubeCommand/browseEndpoint}",
+          "metadata.lockupMetadataViewModel.{image/decoratedAvatarViewModel}.metadata.contentMetadataViewModel.metadataRows.0.metadataParts.0.text"
+        ],
+        "channel_id": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.text.{commandRuns/0/onTap/innertubeCommand/browseEndpoint}.commandRuns.0.onTap.innertubeCommand.browseEndpoint.browseId",
+          "metadata.lockupMetadataViewModel.image.decoratedAvatarViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId"
+        ],
+        "views": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.0.text",
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.0.metadataParts.0.text"
+        ],
+        "published": [
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.1.text",
+          "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.0.metadataParts.1.text"
+        ],
+        "duration": [
+          "contentImage.thumbnailViewModel.overlays.*.thumbnailOverlayBadgeViewModel.thumbnailBadges.0.thumbnailBadgeViewModel.text",
+          "contentImage.thumbnailViewModel.overlays.*.thumbnailBottomOverlayViewModel.badges.0.thumbnailBadgeViewModel.text"
+        ],
+        "thumbnail": [
+          "contentImage.thumbnailViewModel.image.sources.-1.url"
+        ]
+      }
+    }
+  ],
+  "continuation": [
+    "continuationEndpoint.continuationCommand.token",
+    "continuationCommand.token",
+    "nextContinuationData.continuation",
+    "button.buttonRenderer.command.continuationCommand.token"
+  ],
+  "continuation_renderer": "continuationItemRenderer",
+  "estimated_results": [
+    "estimatedResults"
+  ],
+  "watch": {
+    "comment": "The video page, from the 'next' endpoint: its fields, chapters, related videos and the token of its comments.",
+    "fields": {
+      "title": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.title"
+      ],
+      "views": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.viewCount"
+      ],
+      "date": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.dateText"
+      ],
+      "published": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.relativeDateText"
+      ],
+      "likes": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.videoActions.menuRenderer.topLevelButtons.*.segmentedLikeDislikeButtonViewModel.likeButtonViewModel.likeButtonViewModel.toggleButtonViewModel.toggleButtonViewModel.defaultButtonViewModel.buttonViewModel.title"
+      ],
+      "channel": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title"
+      ],
+      "channel_id": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.owner.videoOwnerRenderer.navigationEndpoint.browseEndpoint.browseId",
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title.runs.0.navigationEndpoint.browseEndpoint.browseId"
+      ],
+      "handle": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.owner.videoOwnerRenderer.navigationEndpoint.browseEndpoint.canonicalBaseUrl"
+      ],
+      "subscribers": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.owner.videoOwnerRenderer.subscriberCountText"
+      ],
+      "description": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.attributedDescription",
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoSecondaryInfoRenderer.description"
+      ],
+      "live": [
+        "contents.twoColumnWatchNextResults.results.results.contents.*.videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.isLive"
+      ]
+    },
+    "chapters": {
+      "lists": [
+        "playerOverlays.playerOverlayRenderer.decoratedPlayerBarRenderer.decoratedPlayerBarRenderer.playerBar.multiMarkersPlayerBarRenderer.markersMap.*.value.chapters",
+        "playerOverlays.playerOverlayRenderer.decoratedPlayerBarRenderer.decoratedPlayerBarRenderer.playerBar.chapteredPlayerBarRenderer.chapters"
+      ],
+      "fields": {
+        "title": [
+          "chapterRenderer.title"
+        ],
+        "start_ms": [
+          "chapterRenderer.timeRangeStartMillis"
+        ]
+      }
+    },
+    "related": [
+      "contents.twoColumnWatchNextResults.secondaryResults.secondaryResults.results"
+    ],
+    "comments": [
+      "contents.twoColumnWatchNextResults.results.results.contents.*.itemSectionRenderer.contents.*.continuationItemRenderer.continuationEndpoint.continuationCommand.token"
+    ]
+  },
+  "comments": {
+    "comment": "Comments and replies from the 'next' endpoint with a comments token. A thread (or a reply) holds a key; the text sits in the entity with that key, elsewhere in the answer.",
+    "thread": "commentThreadRenderer",
+    "reply": "commentViewModel",
+    "key": [
+      "commentViewModel.commentViewModel.commentKey",
+      "commentKey"
+    ],
+    "entity": "commentEntityPayload",
+    "entity_key": [
+      "key"
+    ],
+    "fields": {
+      "id": [
+        "properties.commentId"
+      ],
+      "channel": [
+        "author.displayName"
+      ],
+      "channel_id": [
+        "author.channelId"
+      ],
+      "text": [
+        "properties.content"
+      ],
+      "published": [
+        "properties.publishedTime"
+      ],
+      "likes": [
+        "toolbar.likeCountNotliked"
+      ],
+      "replies": [
+        "toolbar.replyCount"
+      ],
+      "creator": [
+        "author.isCreator"
+      ]
+    },
+    "thread_fields": {
+      "pinned": [
+        "renderingPriority=RENDERING_PRIORITY_PINNED_COMMENT"
+      ],
+      "replies_token": [
+        "replies.commentRepliesRenderer.contents.*.continuationItemRenderer.continuationEndpoint.continuationCommand.token"
+      ]
+    },
+    "count": [
+      "onResponseReceivedEndpoints.*.reloadContinuationItemsCommand.continuationItems.*.commentsHeaderRenderer.countText"
+    ],
+    "sort": {
+      "top": [
+        "onResponseReceivedEndpoints.*.reloadContinuationItemsCommand.continuationItems.*.commentsHeaderRenderer.sortMenu.sortFilterSubMenuRenderer.subMenuItems.0.serviceEndpoint.continuationCommand.token"
+      ],
+      "newest": [
+        "onResponseReceivedEndpoints.*.reloadContinuationItemsCommand.continuationItems.*.commentsHeaderRenderer.sortMenu.sortFilterSubMenuRenderer.subMenuItems.1.serviceEndpoint.continuationCommand.token"
+      ]
+    }
+  },
+  "channel": {
+    "comment": "A channel, from the 'browse' endpoint with its id and the params of a tab.",
+    "tabs": {
+      "videos": "EgZ2aWRlb3PyBgQKAjoA",
+      "shorts": "EgZzaG9ydHPyBgUKA5oBAA==",
+      "live": "EgdzdHJlYW1z8gYECgJ6AA==",
+      "playlists": "EglwbGF5bGlzdHPyBgoKCEIGCgIQaCIA",
+      "search": "EgZzZWFyY2jyBgQKAloA"
+    },
+    "fields": {
+      "id": [
+        "metadata.channelMetadataRenderer.externalId"
+      ],
+      "title": [
+        "metadata.channelMetadataRenderer.title",
+        "header.pageHeaderRenderer.pageTitle"
+      ],
+      "handle": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.text.content"
+      ],
+      "subscribers": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.0.text"
+      ],
+      "videos": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.1.text"
+      ],
+      "description": [
+        "metadata.channelMetadataRenderer.description"
+      ],
+      "thumbnail": [
+        "metadata.channelMetadataRenderer.avatar.thumbnails.-1.url"
+      ]
+    },
+    "results": [
+      "contents.twoColumnBrowseResultsRenderer.tabs.*.tabRenderer.content",
+      "contents.twoColumnBrowseResultsRenderer.tabs.*.expandableTabRenderer.content",
+      "onResponseReceivedActions",
+      "onResponseReceivedEndpoints"
+    ],
+    "resolve": [
+      "endpoint.browseEndpoint.browseId"
+    ]
+  },
+  "playlist": {
+    "comment": "A playlist, from the 'browse' endpoint with VL and its id.",
+    "fields": {
+      "title": [
+        "header.pageHeaderRenderer.pageTitle",
+        "metadata.playlistMetadataRenderer.title"
+      ],
+      "channel": [
+        "sidebar.playlistSidebarRenderer.items.*.playlistSidebarSecondaryInfoRenderer.videoOwner.videoOwnerRenderer.title",
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.avatarStack.avatarStackViewModel.text"
+      ],
+      "channel_id": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.*.metadataParts.*.avatarStack.avatarStackViewModel.text.commandRuns.0.onTap.innertubeCommand.browseEndpoint.browseId"
+      ],
+      "videos": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.1.text"
+      ],
+      "views": [
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.2.text"
+      ],
+      "description": [
+        "metadata.playlistMetadataRenderer.description",
+        "header.pageHeaderRenderer.content.pageHeaderViewModel.description.descriptionPreviewViewModel.description"
+      ]
+    },
+    "results": [
+      "contents.twoColumnBrowseResultsRenderer.tabs.*.tabRenderer.content",
+      "onResponseReceivedActions",
+      "onResponseReceivedEndpoints"
+    ]
+  }
+}

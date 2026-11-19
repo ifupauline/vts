@@ -1,0 +1,25 @@
+# what make and pip leave
+build/
+dist/
+*.egg-info/
+
+# editors
+tags
+*.swp
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# fuzzing
+fuzz-crash-*/
+crash-*
+leak-*
+timeout-*
+oom-*
+
+# notes kept out of the repository
+build-notes/

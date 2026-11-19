@@ -1,0 +1,183 @@
+{
+  "comment": "Which recorded answer fake_server.py gives to which request: the first entry whose match members all equal the request's (hl from context.client). record.py keeps it up to date.",
+  "requests": [
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EglwbGF5bGlzdHPyBgoKCEIGCgIQaCIA",
+        "hl": "en"
+      },
+      "file": "channel-playlists.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EgZzZWFyY2jyBgQKAloA",
+        "query": "black hole",
+        "hl": "en"
+      },
+      "file": "channel-search.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EgZzaG9ydHPyBgUKA5oBAA==",
+        "hl": "en"
+      },
+      "file": "channel-shorts.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "continuation": "4qmFsgLZCRIYVUNzWFZrMzdibHRIeEQxckRQd3ROTThRGrwJOGdhRUJ4cUJCM3ItQmpyN0Jnb2tObUl6WWpCaU5EVXRNREF3TUMweVl6ZzNMV0UxWWpNdE1UUmpNVFJsWmpCaFlqSmpFdEFHUVdOV09GWmtWMVZKVG5OeVlrdFlaalJMWlMxTVpVOUlWRzVmWDFCTGVWOXRRVXQ1UkRrelFtaGZkVTFXWDIxNVlXbHZWVFExZUVZeVgxUnJUbTVRVVd4UFNuQXhhMW80VDJ4V2IwdGlhVlJYYUVKUlYwNDRWblZKZG14Nk5YTXhkemhWVGpZM2MyNHRjalEwYzFSVlpWY3dRMnhEWkZGamIxUnljakpFZWtKRFFsZzJkekJUV1VGWFlYTTVZV3RYY214Nk5WZGxablU1VlVOTmNITldjV2gwYjFWM2NFbHJXRjh4YTBsaFJXUmlhVUZzUzFBMmRtcHpaalJtYUVac1NVTldjakphYnpCbVJtSnVZVlV0VG5nM2FHMUtYMmhGV0ROUmMyaHVXSGx3YzJ4T09VVmZYMk4wU0U5dmNHaDVMVTVqUTBJM1VraElSMnMyYVV4dmFWUlRSSG95ZHpCeGFDMUdOaTFXVG1WdWJFNUdWWEIzVmxKdU5GazVWRTUwZVU0eGNXcFpkalEyVDBGSFJsOVRRMk14UTNWSlJuRlJablExTW5OSlRGaFdOM1pIY1ZsdWNEZGpjVXgxVFhGTE5WY3ljVlJvYm5kME5sRXlVbmh2YlVSSVFVSktTbTVRZG5KMVoxcDJkREZTWlRWcWFsOUhUSEUzVGtkUVpXeFRUVGsxYUZCRlpVOUNMV0pDUmxFeVUxcFViak5RWTNGUlVFZE1VVkp6UkVWb1VHTlpUREYyTFVNNWJEVlhSa2gwUWxKT2JXOVlNbEpRYlZWdE0yd3pZMjkzV0dsRFoyc3dWMVZEZGpkMlp5MXJObk51Wm1ONVFWQTVZMVkxY25OU1QwNHlaVGxwZUhwaVprbHBYMk5TZFZKZlEzcHFPSGQ1TjNaSVVtUkxXVlp6Y25oV2FXcENjRkF0ZGtFMFpqY3RNbTFCUTJWeVpHVkVVVzlrVDI1TGRGOUxVMk4xV1RoNlgwUkNXV2x4YTJkVVFYbzJSRkZHTmxSa1NFVXdXQzFsWVZOQ2JtSkJTbmhsWTNWcVRXMUpkM0l4WTFvemFHcDJPVkJSYzBWd01rY3ljekV0ZEhKd2FHUlJSRUZ4Um5ONVgwMVJTV1l4ZVVOTWQweE9SSEYzWDNGQ05pMVVTMFJtZGpsUVRYUkJiSGRNYVdwdGIwMXNUMFU1UmpKbWRrb3djV1JUZFRSaWFFVmFPVjg1WHpScVkwSkRiWGxJTTFCWlMxOUxhMUJtTTJGdmNrOHhVR2xxTlRCaU5UaENVazVtZEhRdFFVWmtOV0kzVm10cVpHUlZVSE5MUkV0c00yMU5Ta1JVUTJsalEzUkJTRVZhU3poUWExbzNVVTFoYUdwdVVGSm1lbGhoTURSTk5HOXhjMlJxZUZoclduaFRiVWhMVDA5QmNGRnZNRE42T1ZSV1FXcE5NMlJxWlcxUWFraFNVMFZLY1VRMmR5MHlOV015TW05Rk4wSkJNM0EwVm5rekxWQk1SM056YUhrWUJBJTNEJTNE"
+      },
+      "file": "channel-videos-2.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EgZ2aWRlb3PyBgQKAjoA",
+        "hl": "en"
+      },
+      "file": "channel-videos.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "continuation": "Eg0SC21mdjBWMVN4Yk5BGAYyggMK2AJnZXRfcmFua2VkX3N0cmVhbXMtLUNxY0JDSUFFRlJlMzBUZ2FuQUVLbHdFSTJGOFFnQVFZQnlLTUFidGxreU1oTUJQa2ZxNGNWX3k3Rms1cmlLV21VUzBvVjdtcUVxenUzYm9fRl9UZXNMNEY5Y1puQ2E3SlVtd2VuYTRSTmV6RWg4WGdWTTktc2poNW9nSHBMS0J5dFJuZGlRaDYyRW9DUWJWZjJpTXpXektpcW5Ba0pFcE1HZnFOVU5sYzBkSlV4UXpzR29qUkNlbGdxQTh3REJUS00ydnduUUpaSWNmNlYzMmY3UWlZd1dHam5jUnFrOGtBRUJRU0J3aUZJQkFFR0FFU0JRakFJQmdBRWdVSWhpQVlBQklGQ0lnZ0dBQVNCUWlvSUJnQUVnVUlpU0FZQUJJSENJY2dFQUVZQUJJSENJUWdFQlFZQVJJRkNMc2dHQUJRQUZnQiIRIgttZnYwVjFTeGJOQTAAeAEoFEIQY29tbWVudHMtc2VjdGlvbg%3D%3D"
+      },
+      "file": "comments-mfv0V1SxbNA-2.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "continuation": "Eg0SC21mdjBWMVN4Yk5BGAYyJSIRIgttZnYwVjFTeGJOQTABeAJCEGNvbW1lbnRzLXNlY3Rpb24%3D"
+      },
+      "file": "comments-mfv0V1SxbNA-newest.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "continuation": "Eg0SC21mdjBWMVN4Yk5BGAYyJSIRIgttZnYwVjFTeGJOQTAAeAJCEGNvbW1lbnRzLXNlY3Rpb24%3D"
+      },
+      "file": "comments-mfv0V1SxbNA.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "refused"
+      },
+      "status": 400,
+      "file": "error-400.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "videoId": "dQw4w9WgXcQ",
+        "hl": "en"
+      },
+      "file": "next-dQw4w9WgXcQ.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "videoId": "mfv0V1SxbNA",
+        "hl": "en"
+      },
+      "file": "next-mfv0V1SxbNA.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "VLPLFs4vir_WsTxontcYm5ctqp89cNBJKNrs",
+        "hl": "en"
+      },
+      "file": "playlist-existential.json"
+    },
+    {
+      "endpoint": "next",
+      "match": {
+        "continuation": "Eg0SC21mdjBWMVN4Yk5BGAYygwEaUBIaVWd6WVJGaHlfYUdUaVlxWUhtaDRBYUFCQWciAggAKhhVQ1h1cVNCbEhBRTZYdy15ZUpBMFR1bncyC21mdjBWMVN4Yk5BQAFICoIBAggBQi9jb21tZW50LXJlcGxpZXMtaXRlbS1VZ3pZUkZoeV9hR1RpWXFZSG1oNEFhQUJBZw%3D%3D"
+      },
+      "file": "replies-mfv0V1SxbNA.json"
+    },
+    {
+      "endpoint": "navigation/resolve_url",
+      "match": {
+        "url": "https://www.youtube.com/@kurzgesagt",
+        "hl": "en"
+      },
+      "file": "resolve-kurzgesagt.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "kurzgesagt",
+        "params": "EgIQAg==",
+        "hl": "en"
+      },
+      "file": "search-channels.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "continuation": "EsMCEg5saW51cyB0b3J2YWxkcxqwAlNCU0NBUXR0Wm5Zd1ZqRlRlR0pPUVlJQkMyODRUbEJzYkhwclJtaEZnZ0VMTUZCVFFUSk1Sa1pzZG11Q0FRc3paVWQzYzI1bk5IQXlOSUlCQzFNMVV6bE1TVlF0YUdSamdnRUxjME55WDJkaU9ISmtSVW1DQVF0WlMydEZaUzFRZUZjeE1JSUJDMlpwTWpsd1preGpWelJKZ2dFTGFtaFdRVUZTYVdSMGVHLUNBUXREV1haS1VISmhOMFZpYTRJQkMwbHVkbUZ2ZDFBNFdFZzRnZ0VMTkZkRFZFZDVZMEpqWldlQ0FRczBYM2d3VlZOMVVUbFRjNElCQzA5Tlh6aFZUMUJHY0hGRmdnRUxhbGxWV2tGR00yVlFSa1d5QVFZS0JBZ1JFQUxxQVFRSUFoQVoYgeDoGCILc2VhcmNoLWZlZWQ%3D"
+      },
+      "file": "search-linus-2.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "linus torvalds",
+        "hl": "fr"
+      },
+      "file": "search-linus-fr.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "linus torvalds",
+        "hl": "en"
+      },
+      "file": "search-linus.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "lofi radio",
+        "params": "EgJAAQ==",
+        "hl": "en"
+      },
+      "file": "search-live.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "kurzgesagt",
+        "params": "EgIQAw==",
+        "hl": "en"
+      },
+      "file": "search-playlists.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "too many requests"
+      },
+      "status": 403,
+      "file": "sorry.html"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "not json"
+      },
+      "status": 200,
+      "file": "sorry.html"
+    }
+  ]
+}

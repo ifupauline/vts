@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vts"
+dynamic = ["version"]
+description = "Video Terminal Shell: YouTube in a terminal, without a Google account"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+authors = [{ name = "ifupauline" }]
+keywords = ["youtube", "terminal", "tui", "mpv", "yt-dlp"]
+classifiers = [
+    "Environment :: Console :: Curses",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    # thumbnails in the app
+    "pillow>=9",
+    # curses, which Python has everywhere but on Windows
+    "windows-curses>=2.3; sys_platform == 'win32'",
+]
+
+[project.urls]
+Homepage = "https://github.com/ifupauline/vts"
+
+[project.scripts]
+vts = "vts.main:main"
+
+[project.optional-dependencies]
+test = ["pytest>=7", "pyte>=0.8; sys_platform != 'win32'"]
+
+[tool.setuptools]
+packages = ["vts", "vts.cli", "vts.tui"]
+
+[tool.setuptools.dynamic]
+version = { attr = "vts.__version__" }
+
+[tool.setuptools.package-data]
+vts = ["youtube.json"]
+
+[tool.ruff]
+line-length = 79
+target-version = "py310"
+extend-exclude = ["build", "build-*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP", "SIM", "PL"]
+ignore = [
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0603",
+    "PLC0415", "SIM102", "SIM108", "SIM105", "SIM115", "B904", "UP015",
+    "PLR1714", "PLR0917", "PLW1510", "B905", "PLW0108",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLW", "B", "E501", "E741", "UP031", "PLE2502", "SIM", "PLR"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]

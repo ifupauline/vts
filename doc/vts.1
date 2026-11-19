@@ -1,0 +1,472 @@
+.\" SPDX-License-Identifier: Apache-2.0
+.TH VTS 1 2026-11-17 "vts 1.0.0" "User Commands"
+.SH NAME
+vts \- Video Terminal Shell, a terminal client for YouTube
+.SH SYNOPSIS
+.B vts
+.RB [ \-c
+.IR file ]
+.RB [ \-v ]
+.RB [ \-\-offline ]
+.br
+.B vts
+.RI [ option ]...\&
+.I command
+.RI [ argument ]...
+.SH DESCRIPTION
+.B vts
+searches YouTube, shows video pages, comments, channels and playlists,
+plays videos with
+.BR mpv (1)
+and downloads them with
+.BR yt\-dlp (1),
+all without a Google account.
+It keeps a list of favourite channels on your computer and sends a
+desktop notification for each of their new videos.
+History, Watch later and your own playlists stay on your computer too.
+.PP
+Without a command,
+.B vts
+starts the full screen app (see
+.BR "THE APP" ).
+With a command, it prints what was asked and ends, for scripts and
+quick looks.
+On a terminal, results take two lines each; otherwise they are one line
+of tab\-separated fields, and
+.B \-\-json
+prints JSON.
+.PP
+A
+.I VIDEO
+is an 11\-character identifier or any YouTube link to it (watch, youtu.be,
+shorts, live, embed).
+A
+.I CHANNEL
+is its identifier (UC...), its handle (@name) or a link to it.
+A
+.I PLAYLIST
+is its identifier or a link with list=.
+.SH OPTIONS
+.TP
+.BI \-c " file" "\fR, \fP\-\-config " file
+Read the settings from
+.I file
+instead of
+.I ~/.config/vts/config
+(on Windows,
+.IR %APPDATA%\evts\econfig ).
+.TP
+.BR \-v ", " \-\-verbose
+Say more about what happens.
+.TP
+.B \-\-offline
+No updates of the rules or of yt\-dlp, whatever the settings say.
+.TP
+.BR \-h ", " \-\-help
+Show the help and exit.
+Each command has its own:
+.BI "vts " command " \-\-help" .
+.TP
+.BR \-V ", " \-\-version
+Show the version and exit.
+.SH COMMANDS
+.SS Searching and looking
+.TP
+.BI "search " "\fR[\fPoption\fR]...\fP words" ...
+Search, with the website's filters:
+.BI \-t " type"
+(video, shorts, channel, playlist, movie),
+.BI \-d " when"
+(hour, today, week, month, year),
+.BI \-l " length"
+(short, under 3 minutes; medium, 3 to 20; long, over 20),
+.BI \-f " list"
+(live, 4k, hd, subtitles, cc, 360, vr180, 3d, hdr, location, purchased,
+comma\-separated),
+.BI \-s " order"
+(relevance, date, views, rating),
+.BI \-p " n"
+pages of results,
+.B \-j
+for JSON.
+.TP
+.BI "suggest " words ...
+What the search box suggests, one per line.
+.TP
+.BI "info " "\fR[\fP\-r n\fR] [\fP\-j\fR]\fP video"
+The video page: title, channel, views, date, likes, description,
+chapters and
+.I n
+videos up next (5 by default).
+.TP
+.BI "comments " "\fR[\fP\-n\fR] [\fP\-r\fR] [\fP\-p n\fR] [\fP\-j\fR]\fP video"
+Its comments, top ones first, or newest first with
+.BR \-n ;
+with
+.BR \-r ,
+the first replies to each.
+.TP
+.BI "channel " "\fR[\fP\-t tab\fR] [\fP\-s words\fR] [\fP\-p n\fR] [\fP\-j\fR]\fP channel"
+A channel's videos, shorts, live streams or playlists
+.RI ( tab ),
+or its search results for
+.IR words .
+.TP
+.BI "playlist " "\fR[\fP\-p n\fR] [\fP\-j\fR]\fP playlist"
+The videos of a playlist.
+.TP
+.BI "feed " "\fR[\fP\-n\fR] [\fP\-j\fR]\fP channel"
+A channel's latest uploads from its public feed, without Shorts with
+.BR \-n .
+.SS Watching
+.TP
+.BI "play " "\fR[\fPoption\fR]...\fP video\fR|\fPplaylist" ...
+Play with mpv, one after the other, from where you stopped last time;
+where you stop goes into the history.
+.BI \-q " quality"
+(best, 2160, 1440, 1080, 720, 480, 360, 240, 144),
+.B \-a
+for the sound only,
+.BI \-\-sound\-quality " q"
+for the sound only in that quality (high, medium, low),
+.BI \-s " speed"
+(0.25 to 4),
+.BI \-\-subs " langs"
+(fr,en),
+.B \-t
+to draw the video in the terminal,
+.BI \-\-from " time"
+(1:23) for the first video,
+.B \-n
+to start from the beginning.
+.TP
+.BI "subtitles " video
+The subtitles the video has: their code, for
+.BR "play \-\-subs" ,
+and their name.
+.TP
+.BI "download " "\fR[\fP\-q quality\fR] [\fP\-a\fR] [\fP\-\-audio\-format f\fR] [\fP\-\-sound\-quality q\fR] [\fP\-d dir\fR]\fP video\fR|\fPplaylist" ...
+Download with yt\-dlp, into the current folder or
+.IR dir :
+the video in
+.IR quality ,
+or the sound only with
+.B \-a
+(as YouTube has it) or
+.BI \-\-audio\-format " f"
+(mp3, m4a, opus, flac, wav; ffmpeg makes them), in the quality of
+.BI \-\-sound\-quality " q"
+(high, medium, low; by default the
+.B sound_quality
+setting).
+.SS Your library
+.TP
+.B fav
+Your favourite channels:
+.B "vts fav"
+lists them;
+.BI "fav add " "\fR[\fP\-g group\fR]\fP channel" ...\&
+and
+.BI "fav remove " channel ...\&
+change the list;
+.BI "fav set " "channel " notify=yes|no " " shorts=yes|no " " group= name
+sets whether its new videos are notified, whether its Shorts count and
+its group;
+.BI "fav import " file
+adds the channels of Google Takeout's
+.I subscriptions.csv
+or of an OPML file;
+.B "fav export"
+prints them as OPML
+.RB ( \-\-csv
+for Takeout's format).
+.TP
+.B history
+What you watched, most recent first, and where you stopped
+.RB ( \-n
+.IR n ,
+.BR \-\-json );
+.BI "history remove " video ...\&
+and
+.B "history clear"
+forget.
+.TP
+.B later
+Watch later;
+.BI "later add " video ...\&
+and
+.BI "later remove " video ...\&
+change it.
+.TP
+.B list
+Your playlists:
+.BI "list show " name ,
+.BI "list create " name ,
+.BI "list delete " name ,
+.BI "list rename " "name new" ,
+.BI "list add " "name video" ...,
+.BI "list remove " "name video" ....
+.SS Notifications and upkeep
+.TP
+.BI "check " "\fR[\fP\-q\fR] [\fP\-n\fR] [\fP\-j\fR]\fP"
+Look for new videos of your favourite channels, print them and send a
+desktop notification for each (none with
+.BR \-n ,
+nothing printed with
+.BR \-q ).
+A channel's first check only notes what is there.
+.TP
+.BI "check \-\-install " "\fR[\fPminutes\fR]\fP"
+Check every
+.I minutes
+(30 by default) with a systemd user timer (on Windows, a scheduled task);
+.B "check \-\-uninstall"
+removes it.
+Where the desktop allows it, each notification has buttons:
+.B Play
+and
+.BR "Watch later" .
+.TP
+.BR "update " [ \-\-rules | \-\-yt\-dlp ]
+Update now what vts updates on its own (see
+.BR UPDATES ).
+.TP
+.B doctor
+Try everything (settings, library, mpv, yt\-dlp and its age, deno,
+ffmpeg, the notifier, the timer, the rules, a search, a video page, a
+feed, suggestions, thumbnails) and say what to fix.
+Exits with 1 when something doesn't work.
+.TP
+.B config
+Show the settings in use and where they come from;
+.B "config \-\-help"
+says what each one does, its values and its default;
+.B "config \-\-init"
+writes a settings file with all of them explained;
+.BI "config set " "key value"
+changes one in the settings file.
+.SH THE APP
+.B vts
+alone opens the app: Home (videos you were watching, and the new videos
+of your favourites), Search, Favourites, Library (Watch later, your
+playlists, the downloads, the history) and Settings, a page for each
+video, channel and playlist, and comments.
+What you watched is marked in the lists (watched, or where you stopped).
+mpv plays in its own window while you keep browsing; the top bar shows
+where it is.
+In a terminal 100 columns wide or more, the selected result is shown on
+the right, with its thumbnail.
+.PP
+The main keys
+.RB ( ? " shows them all):"
+.TP 14
+.BR 1 " " 2 " " 3 " " 4
+Home, Favourites, Library, Settings (each one explained, changed in
+place, the checks of
+.B "vts doctor"
+and the updates of
+.BR "vts update" ).
+On Favourites:
+.B N
+adds a channel,
+.B i
+imports,
+.B e
+exports.
+.TP
+.BR / ", " s
+Search; your recent searches come first, then suggestions as you type;
+Tab or the arrows pick one, Delete forgets a recent one, Esc (or
+Backspace with nothing typed) cancels;
+.B F
+sets the filters of the results.
+.TP
+.BR Enter ", " Backspace
+Open, go back
+.RB ( h ,
+Esc too).
+.TP
+.BR j " " k ", arrows"
+Move;
+.BR g " " G ,
+PgUp, PgDn too.
+.TP
+.BR p " " P " " a
+Play, play from here on, the sound only.
+.TP
+.B Q
+Play in a quality chosen from a menu; for the sound only, a second menu
+asks high, medium or low.
+.TP
+.B u
+Subtitles, chosen from those the video has; while a video plays, its
+subtitles change and it goes on.
+.TP
+.B d
+Download: the video in a quality, or the sound only (as YouTube has it,
+MP3, M4A, Opus, FLAC), chosen from a menu; for the sound, then high,
+medium or low.
+.TP
+.BR w " " + " " A
+Watch later, add to a playlist, add to what plays.
+.TP
+.BR c " " f " " y
+Go to the channel, make it a favourite, copy the link.
+.TP
+.BR C " " t " " D
+On a video page: comments, chapters, the whole description.
+.TP
+.BR Space " " < " " > " " x
+While playing: pause, previous, next, stop.
+.TP
+.BR , " " . " " 9 " " 0 " " m
+While playing: back and forward 10 seconds, volume down and up, mute.
+.TP
+.B T
+While playing: go to one of its chapters.
+.TP
+.B V
+While playing: go on in another quality, from where it is.
+.TP
+.BR \- ", Delete"
+Remove from a playlist, the history or the favourites; in Downloads,
+stop one or take it off the list (Enter plays the file).
+.TP
+.B r
+Load again (on Home: look for new videos).
+.TP
+.B q
+Back, and quit from a section.
+.PP
+The mouse works: click to select, double\-click to open, the wheel to
+scroll.
+.SH SETTINGS
+.I ~/.config/vts/config
+(on Windows,
+.IR %APPDATA%\evts\econfig )
+holds lines of
+.IB key " = " value ;
+.B #
+starts a comment.
+.B "vts config \-\-help"
+explains them, and the app's Settings
+.RB ( 4 )
+change them.
+.TP
+.BI language " = code"
+Language of YouTube's results (fr, en\-GB, pt\-BR); from
+.B LANG
+by default.
+.TP
+.BI region " = CC"
+Country of the results (FR); empty for YouTube's guess.
+.TP
+.BI quality " = height"
+best, audio, 2160, 1440, 1080 (the default), 720, 480, 360, 240 or 144.
+.TP
+.BI sound_quality " = q"
+The sound only, played or downloaded: high (the default, the best
+YouTube has), medium (about 128 kbit/s) or low (about 64 kbit/s).
+.TP
+.BI subtitles " = langs"
+Subtitle languages for mpv (fr,en); empty for none.
+.TP
+.BI player " = program"
+What plays (mpv).
+.TP
+.BI downloader " = program"
+What downloads (yt\-dlp); mpv uses it too, to play.
+.TP
+.BI notifier " = program"
+What notifies (notify\-send); on Windows, its own notifications are used.
+.TP
+.BI downloads " = folder"
+Where downloads go: from the app, and from
+.B "vts download"
+without
+.BR \-d ;
+.B ~/
+is your home.
+Your Downloads folder by default (in the app; the current folder for
+.BR "vts download" ).
+.TP
+.BR notifications " = " yes | no
+Desktop notifications of new videos.
+.TP
+.BR thumbnails " = " auto | blocks | sixel | kitty | iterm2 | no
+How the app shows thumbnails: as the terminal's name says (auto, the
+default), in coloured blocks, or in one of the image formats.
+.TP
+.BR updates " = " yes | no
+Automatic updates of the rules and of yt\-dlp.
+.SH UPDATES
+YouTube changes its pages often.
+Where things are in its answers is described by rules, data built into
+vts.
+Once a day the app and
+.B "vts check"
+fetch newer rules from vts' repository and keep them in
+.I ~/.cache/vts/rules.json
+if they are complete, newer and load without error; otherwise the
+built\-in rules stay in use.
+Once a week, yt\-dlp is told to update itself when you can replace it
+(installed by you, not by the system's packages).
+.SH FILES
+.TP
+.I ~/.config/vts/config
+The settings.
+.TP
+.I ~/.local/share/vts/vts.db
+The library: favourites, seen videos, history, playlists, recent
+searches, downloads (SQLite).
+.TP
+.I ~/.cache/vts/
+The web client version, updated rules, thumbnails, the app's log
+.RI ( vts.log )
+and mpv's
+.RI ( mpv.log ).
+.TP
+.I ~/.config/systemd/user/vts\-check.timer
+The timer of
+.BR "vts check \-\-install" .
+.PP
+On Windows: the settings in
+.IR %APPDATA%\evts ,
+the library in
+.IR %LOCALAPPDATA%\evts ,
+the cache in
+.IR %LOCALAPPDATA%\evts\ecache .
+.PP
+The XDG variables
+.RB ( XDG_CONFIG_HOME ,
+.BR XDG_DATA_HOME ,
+.BR XDG_CACHE_HOME ,
+.BR XDG_RUNTIME_DIR )
+are honoured.
+.SH EXIT STATUS
+0 on success, 1 when something failed, 2 for a bad command line.
+.SH EXAMPLES
+.nf
+vts search \-t video \-d week \-s views linux kernel
+vts info https://youtu.be/dQw4w9WgXcQ
+vts channel \-t shorts @kurzgesagt
+vts fav import subscriptions.csv
+vts check \-\-install
+vts play \-a \-s 1.5 PLFs4vir_WsTxontcYm5ctqp89cNBJKNrs
+.fi
+.SH PRIVACY
+vts has no account and sends no telemetry.
+It talks only to YouTube's own sites (and to vts' repository for the
+rules); the only cookie it sends is YouTube's consent answer.
+Everything you keep stays in your files.
+.PP
+Some things need a Google account and are out of reach: liking,
+commenting, subscribing on YouTube's side, YouTube's recommendations,
+age\-restricted and members\-only videos.
+.SH SEE ALSO
+.BR mpv (1),
+.BR yt\-dlp (1),
+.BR notify\-send (1)
+.PP
+YouTube is a trademark of Google LLC; vts is not affiliated with or
+endorsed by Google or YouTube.
