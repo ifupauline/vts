@@ -17,19 +17,23 @@ browsing.
   the videos up next.
 - **Channels and playlists.** Their Videos, Shorts, Live and Playlists
   tabs, and search inside a channel.
-- **Watch in mpv.** Quality, subtitles, speed, sound only, a queue that
+- **Watch in mpv.** Quality, subtitles, speed, sound only (in high,
+  medium or low quality), a queue that
   plays on, live streams, the video inside the terminal, and every video
   resumes where you stopped.
 - **Favourite channels, no account.** Your own list, the subscriptions
-  you export from Google Takeout, and a desktop notification for each new
-  video, even with vts closed.
+  you export from Google Takeout (or an OPML file), exported back when
+  you want, and a desktop notification for each new video, even with vts
+  closed.
 - **Your library, on your computer.** History, Watch later and your own
   playlists, never sent anywhere.
 - **Thumbnails in the terminal,** as pictures where the terminal can show
   them (kitty, Ghostty, WezTerm, foot, Konsole, iTerm2, Windows
   Terminal), in coloured blocks elsewhere.
-- **Settings explained.** Every setting says what it does and which
-  values it takes, in the app (`4`) and with `vts config --help`.
+- **Settings explained, changed in the app.** Every setting says what it
+  does and which values it takes, and changes on the Settings screen
+  (`4`), with "Check now" and "Update now" there too: no file to edit by
+  hand. `vts config --help` explains them on the command line.
 - **It keeps up with YouTube.** When YouTube changes its pages, vts picks
   up the fix by itself within a day, and keeps yt-dlp up to date.
 
@@ -62,6 +66,7 @@ In the app, `?` shows the keys. The main ones:
 | `,` `.` `9` `0` `m` | while playing: back, forward 10 s, volume, mute   |
 | `T` `V`             | while playing: a chapter, go on in another quality |
 | `-`                 | remove from a list, the history, the favourites   |
+| `N` `i` `e`         | on Favourites: add a channel (@handle or link), import, export |
 | `q`                 | back, and quit from a section                     |
 
 The mouse works too: click to select, double-click to open, the wheel to
@@ -127,8 +132,9 @@ information is described in a data file, and once a day the app (or
 `vts check`) fetches the latest one from this repository, checks it, and
 keeps it only if it is complete and newer. Once a week it has yt-dlp
 update itself, when you installed yt-dlp yourself rather than through
-your system's packages. `vts update` does both now; `updates = no` in
-the settings or `--offline` turns it off.
+your system's packages. `vts update` (or "Update now" in the app's
+Settings) does both now; `updates = no` in the settings or `--offline`
+turns it off.
 
 ## Install
 
@@ -143,7 +149,10 @@ irm https://raw.githubusercontent.com/ifupauline/vts/main/install.ps1 | iex
 ```
 
 Then open a new window and type `vts`. The same line updates vts
-later. Windows Terminal is best: it shows the thumbnails as pictures.
+later. Windows Terminal is best: opened from one of its tabs, vts shows
+the thumbnails as pictures (in a window started otherwise, as coloured
+blocks, or as pictures with `thumbnails` set to `sixel` in the app's
+Settings).
 
 ### Linux
 
