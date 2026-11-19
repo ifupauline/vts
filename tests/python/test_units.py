@@ -485,3 +485,14 @@ def test_term_write(capfd):
     if not platform.WINDOWS:
         assert capfd.readouterr().out == "\x1b[31mé\x1b[0m"
     # on Windows: to the console shown, nothing at all without one
+
+
+def test_colours(monkeypatch):
+    from vts import platform, thumbs
+    for var in ("COLORTERM", "WT_SESSION", "TERM"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setattr(platform, "WINDOWS", False)
+    assert thumbs.colours() == "16"
+    # Windows Terminal reached from a console window has no WT_SESSION
+    monkeypatch.setattr(platform, "WINDOWS", True)
+    assert thumbs.colours() == "full"

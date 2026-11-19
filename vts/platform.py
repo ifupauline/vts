@@ -296,11 +296,19 @@ def _console_write(text):
     if not got or got == wintypes.HANDLE(-1).value:
         return
     h = wintypes.HANDLE(got)  # whole, not cut to 32 bits
+    mode = wintypes.DWORD()
+    old = None
     try:
-        mode = wintypes.DWORD()
-        if k32.GetConsoleMode(h, ctypes.byref(mode)) and not mode.value & 4:
-            # ENABLE_VIRTUAL_TERMINAL_PROCESSING: escapes obeyed
-            k32.SetConsoleMode(h, mode.value | 4)
+        if not k32.GetConsoleMode(h, ctypes.byref(mode)):
+            return
+        # the escapes obeyed: ENABLE_VIRTUAL_TERMINAL_PROCESSING, which
+        # needs ENABLE_PROCESSED_OUTPUT (curses turns both off); never
+        # written as text when the console won't
+        want = mode.value | 1 | 4
+        if want != mode.value:
+            if not k32.SetConsoleMode(h, want):
+                return
+            old = mode.value
         done = wintypes.DWORD()
         for i in range(0, len(text), 16384):
             part = text[i:i + 16384]
@@ -308,6 +316,9 @@ def _console_write(text):
             n = len(part.encode("utf-16-le")) // 2
             k32.WriteConsoleW(h, part, n, ctypes.byref(done), None)
     finally:
+        if old is not None:
+            # as curses had it
+            k32.SetConsoleMode(h, old)
         k32.CloseHandle(h)
 
 

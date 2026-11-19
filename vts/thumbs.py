@@ -96,8 +96,10 @@ def _windows_vt():
 
 def colours():
     """the colours the terminal takes: 'full', '256' or '16'"""
+    # Windows' consoles take them all (since Windows 10), and Windows
+    # Terminal doesn't always say it is there (WT_SESSION)
     if os.environ.get("COLORTERM") in ("truecolor", "24bit") or \
-            os.environ.get("WT_SESSION"):
+            os.environ.get("WT_SESSION") or platform.WINDOWS:
         return "full"
     if "256" in os.environ.get("TERM", ""):
         return "256"
