@@ -190,11 +190,17 @@ class Search(Screen):
         return True
 
     def header(self, app, y):
-        if self.opts.is_default():
-            return y
-        D.text(y, 1, f"Filters: {self.opts.describe()} (F to change)",
-               app.cols - 2, curses.A_DIM)
-        return y + 1
+        if not self.opts.is_default():
+            D.text(y, 1, f"Filters: {self.opts.describe()} (F to change)",
+                   app.cols - 2, curses.A_DIM)
+            y += 1
+        if not self.items:
+            D.text(y + 1, 2, f"Nothing found for {self.query}.",
+                   app.cols - 4, curses.A_BOLD)
+            D.text(y + 2, 2, "Other words, fewer filters (F), or a "
+                   "channel's @handle or link.", app.cols - 4)
+            y += 4
+        return y
 
 
 def search(app, query):

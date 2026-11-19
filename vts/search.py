@@ -131,7 +131,30 @@ def search(yt, query, opts=None):
     if params:
         fields["params"] = params
     page = Page()
-    return yt.rules.page(yt.call("search", fields), page)
+    page = yt.rules.page(yt.call("search", fields), page)
+    if not page.items and (not opts or opts.type in ("any", "channel")):
+        it = as_handle(yt, query)
+        if it:
+            page.items.append(it)
+    return page
+
+
+def as_handle(yt, query):
+    """
+    the channel whose handle is @query, with or without its @, or None:
+    YouTube's search often finds nothing for a handle (maetube0130)
+    """
+    from vts import channel as ch
+    from vts.youtube import YouTubeError
+    name = query.strip()
+    if name.startswith("@"):
+        name = name[1:]
+    if not 3 <= len(name) <= 100 or not ch.handle_like(name):
+        return None
+    try:
+        return ch.get(yt, ch.resolve(yt, "@" + name)).info
+    except YouTubeError:
+        return None
 
 
 def more(yt, page):

@@ -1,13 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Drawing with curses: text cut to a width, wrapped text, colours."""
+"""
+Drawing with curses: text cut to a width, wrapped text, colours.
+
+Windows' curses (PDCurses) gives every character one cell, but a Korean,
+Chinese or Japanese letter takes two on the screen (and a combining mark
+none): what follows it lands in the wrong place. There, a line with such
+characters is drawn by curses as blanks of its real width, and the text
+itself is written into them after each refresh, the terminal placing the
+letters.
+"""
 
 import curses
 
+from vts import platform
 from vts import text as T
 
 C_ACCENT, C_DIM, C_BAR, C_ERROR, C_SELECT = range(1, 6)
 
 scr = None  # the curses window, once the app has started
+
+WIDE_BY_HAND = platform.WINDOWS
+_ops = []  # since erase(): ("text", y, x, x2, s, attr) or ("cover", y, x, x2)
+_shown = set()  # the pieces written by hand at the last refresh
 
 
 def colours():
@@ -39,12 +53,113 @@ def cols():
     return curses.COLS
 
 
+def _by_hand(s):
+    return WIDE_BY_HAND and not s.isascii() and any(
+        T.char_width(c) != 1 for c in s)
+
+
 def put(y, x, s, attr=0):
     """@s at @y, @x as it is (curses refuses the very last cell)"""
+    if _by_hand(s):
+        # straight to the terminal: never a control character
+        s = "".join("?" if ord(c) < 0x20 or 0x7F <= ord(c) < 0xA0 else c
+                    for c in s)
+        w = T.width(s)
+        try:
+            scr.addstr(y, x, " " * w, attr)
+        except curses.error:
+            pass
+        _ops.append(("text", y, x, x + w, s, attr))
+        return
+    if WIDE_BY_HAND and _ops:
+        _ops.append(("cover", y, x, x + len(s)))
     try:
         scr.addstr(y, x, s, attr)
     except curses.error:
         pass
+
+
+def erase():
+    """the whole screen blank, before drawing it again"""
+    _ops.clear()
+    scr.erase()
+
+
+def _pieces():
+    """what to write by hand: each text, less what was drawn over it"""
+    out = []
+    for i, op in enumerate(_ops):
+        if op[0] != "text":
+            continue
+        _, y, x, _, s, attr = op
+        covers = [(o[2], o[3]) for o in _ops[i + 1:] if o[1] == y]
+        col, run, start = x, [], x
+        for c in s:
+            cw = T.char_width(c)
+            hidden = any(a < col + max(cw, 1) and col < b for a, b in covers)
+            if hidden or (not run and cw == 0):
+                if run:
+                    out.append((y, start, "".join(run), attr))
+                run = []
+                start = col + cw
+            else:
+                if not run:
+                    start = col
+                run.append(c)
+            col += cw
+        if run:
+            out.append((y, start, "".join(run), attr))
+    return out
+
+
+_ANSI = None
+
+
+def _sgr(attr):
+    """the escape sequence of a curses attribute: colours, bold, reverse"""
+    global _ANSI
+    if _ANSI is None:
+        names = ("BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA",
+                 "CYAN", "WHITE")
+        _ANSI = {getattr(curses, f"COLOR_{n}"): i for i, n in
+                 enumerate(names)}
+    codes = ["0"]
+    for flag, code in ((curses.A_BOLD, "1"), (curses.A_DIM, "2"),
+                       (curses.A_UNDERLINE, "4"), (curses.A_REVERSE, "7")):
+        if attr & flag:
+            codes.append(code)
+    n = curses.pair_number(attr & curses.A_COLOR)
+    if n and curses.has_colors():
+        try:
+            fg, bg = curses.pair_content(n)
+        except curses.error:
+            fg = bg = -1
+        for c, base in ((fg, 30), (bg, 40)):
+            if c in _ANSI:
+                codes.append(str(base + _ANSI[c]))
+            elif 8 <= c < 16 and c - 8 in _ANSI:
+                codes.append(str(base + 60 + _ANSI[c - 8]))
+    return f"\x1b[{';'.join(codes)}m"
+
+
+def refresh():
+    """curses' refresh, and on Windows the lines it can't place"""
+    global _shown
+    if not WIDE_BY_HAND:
+        scr.refresh()
+        return
+    new = set(_pieces())
+    # gone since last time: blank (as curses believes they are) first
+    gone = "".join(f"\x1b[{y + 1};{x + 1}H{_sgr(a)}{' ' * T.width(s)}"
+                   for y, x, s, a in _shown - new)
+    if gone:
+        platform.term_write(f"\x1b7{gone}\x1b[0m\x1b8")
+    scr.refresh()
+    if new:
+        platform.term_write("\x1b7" + "".join(
+            f"\x1b[{y + 1};{x + 1}H{_sgr(a)}{s}" for y, x, s, a in new) +
+            "\x1b[0m\x1b8")
+    _shown = new
 
 
 def text(y, x, s, width, attr=0):
@@ -59,6 +174,8 @@ def hline(y, x, width, attr=0):
 
 
 def clear_line(y):
+    if WIDE_BY_HAND and _ops:
+        _ops.append(("cover", y, 0, 1 << 16))
     try:
         scr.move(y, 0)
         scr.clrtoeol()

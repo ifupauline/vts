@@ -178,6 +178,22 @@
       },
       "status": 200,
       "file": "sorry.html"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "kurzgesagt",
+        "hl": "en"
+      },
+      "file": "search-nothing.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "nothing at all",
+        "hl": "en"
+      },
+      "file": "search-nothing.json"
     }
   ]
 }

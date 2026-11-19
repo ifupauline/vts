@@ -63,7 +63,8 @@ forgets one), then as you type, suggestions come as on the website
 (Tab or the arrows pick one); Enter searches, Esc (or Backspace when
 nothing is typed) cancels. A link (of a video, a channel or a
 playlist) or a channel's @handle opens what it names instead of
-searching for its words. The results open over where you were,
+searching for its words; and when YouTube finds nothing for a word, vts
+tries it as a channel's handle (`maetube0130`). The results open over where you were,
 so Backspace goes back there. On the results, `F` sets the filters:
 type, upload date, duration, sort order and features (live, 4K,
 subtitles...).

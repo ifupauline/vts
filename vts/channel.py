@@ -39,6 +39,11 @@ def _name_ok(s):
                for c in s)
 
 
+def handle_like(s):
+    """whether @s could be a handle (without its @)"""
+    return bool(s) and _name_ok(s)
+
+
 def resolve(yt, ref):
     """the channel id of @ref: an id, a handle, a link; YouTubeError"""
     if valid_channel_id(ref):

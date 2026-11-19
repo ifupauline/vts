@@ -192,7 +192,7 @@ class App:
     def busy(self, what):
         """say "Loading..." now, before something that takes a while"""
         self.draw_bottom(what)
-        D.scr.refresh()
+        D.refresh()
 
     # --- drawing -----------------------------------------------------------
 
@@ -297,7 +297,7 @@ class App:
             y += r
 
     def draw_help(self):
-        D.scr.erase()
+        D.erase()
         D.text(0, 0, " vts – keys", D.cols(),
                D.pair(D.C_BAR) | curses.A_BOLD)
         for i, line in enumerate(HELP):
@@ -334,6 +334,14 @@ class App:
         if self.thumbs and self.thumbs.mode == "kitty":
             from vts.thumbs import KITTY_DELETE
             self.term_write(KITTY_DELETE)
+        th, y, x = self.shown.thumb, self.shown.y, self.shown.x
+        if th:
+            # blanks where it was: a curses that keeps what it drew last
+            # (Windows') repaints only what it thinks changed
+            blank = " " * th.cols
+            self.term_write("\x1b7\x1b[0m" + "".join(
+                f"\x1b[{y + r + 1};{x + 1}H{blank}" for r in range(th.rows))
+                + "\x1b8")
         D.scr.redrawwin()
         self.shown = Shown()
 
@@ -394,7 +402,7 @@ class App:
         if self.help:
             self.hide_thumb()
             self.draw_help()
-            D.scr.refresh()
+            D.refresh()
             return
         w = 0
         if self.thumbs and s and self.has_pictures(s):
@@ -402,7 +410,7 @@ class App:
         self.cols = D.cols() - w - 1 if w else D.cols()
         if s:
             self._load_marks(s)
-        D.scr.erase()
+        D.erase()
         self.draw_top()
         y = 1
         if s:
@@ -421,7 +429,7 @@ class App:
             want = Shown()  # it would cover the menu
         if not want.same(self.shown):
             self.hide_thumb()
-        D.scr.refresh()
+        D.refresh()
         if want.ident and not self.shown.ident:
             self.put_thumb(want.thumb, want.y, want.x)
             self.shown = want
@@ -506,7 +514,7 @@ class App:
                                       lw + T.width("".join(buf[:cur]))))
                 except curses.error:
                     pass
-                D.scr.refresh()
+                D.refresh()
                 key = read_key(TICK)
                 if key is None:
                     if suggest and typed and \
@@ -614,7 +622,7 @@ class App:
                 D.text(y + 1 + i - top, x + 2, choices[i], w2 - 4,
                        D.pair(D.C_BAR) | (curses.A_REVERSE if i == sel
                                           else 0))
-            D.scr.refresh()
+            D.refresh()
             key = read_key(-1)
             if key in ("UP", "k"):
                 sel = sel - 1 if sel else n - 1

@@ -168,6 +168,16 @@ def test_check(vts, youtube, env):
                     "&file=feed-UCsXVk37bltHxD1rDPwtNM8Q.xml")
 
 
+def test_search_as_handle(vts):
+    # YouTube finds nothing for these words: they are a channel's handle
+    r = vts("search", "kurzgesagt")
+    assert r.code == 0 and r.out.startswith(
+        "channel\tUCsXVk37bltHxD1rDPwtNM8Q\t"), r
+    assert "@kurzgesagt" in r.out, r
+    r = vts("search", "nothing at all")
+    assert r.code == 0 and r.out == "", r
+
+
 def test_update_rules(vts, env, youtube):
     import urllib.request
     from vts import rules

@@ -1,0 +1,37 @@
+{
+ "estimatedResults": "0",
+ "contents": {
+  "twoColumnSearchResultsRenderer": {
+   "primaryContents": {
+    "sectionListRenderer": {
+     "contents": [
+      {
+       "itemSectionRenderer": {
+        "contents": [
+         {
+          "backgroundPromoRenderer": {
+           "title": {
+            "runs": [
+             {
+              "text": "No results found"
+             }
+            ]
+           },
+           "bodyText": {
+            "runs": [
+             {
+              "text": "Try different keywords or remove search filters"
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ }
+}

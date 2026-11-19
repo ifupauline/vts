@@ -33,8 +33,8 @@ def app(tmp_path, env):
     e = dict(env, FAKE_PLAN="[[30, 600]]", FAKE_WAIT="1", FAKE_LOG=str(log))
     started = []
 
-    def start(cols=100, rows=30):
-        t = test_cli.Tui(str(prog), ["-c", str(conf)], e, cols, rows)
+    def start(cols=100, rows=30, prog=str(prog)):
+        t = test_cli.Tui(prog, ["-c", str(conf)], e, cols, rows)
         started.append(t)
         assert t.pump("Home", 10), t.text()
         return t
@@ -104,6 +104,37 @@ def test_search_links(app):
     # words still search
     t.keys("/")
     assert t.keys("linus torvalds\r", "Search: linus torvalds"), t.text()
+
+
+def test_search_as_handle(app):
+    # nothing found for the words: the channel whose handle they are
+    t = app()
+    t.keys("/")
+    assert t.keys("kurzgesagt\r", "Search: kurzgesagt"), t.text()
+    assert t.wait(lambda: "@kurzgesagt" in t.text()), t.text()
+    t.keys("1", "Home")
+    t.keys("/")
+    t.keys("nothing at all\r", "Search: nothing at all")
+    assert t.wait(lambda: "Nothing found for nothing at all." in t.text()), \
+        t.text()
+
+
+def test_wide_letters_by_hand(app, tmp_path):
+    # as on Windows: curses draws blanks, vts writes the letters into them
+    prog = tmp_path / "vts-wide"
+    prog.write_text(f"#!/bin/sh\nPYTHONPATH={ROOT} exec {sys.executable} -c "
+                    "'import sys; import vts.tui.draw as D; "
+                    "D.WIDE_BY_HAND = True; from vts.main import main; "
+                    "sys.exit(main())' \"$@\"\n")
+    prog.chmod(prog.stat().st_mode | stat.S_IXUSR)
+    t = app(prog=str(prog))
+    t.keys("/", "Search")
+    t.keys("스타 채널 abc", None, 0.5)
+    assert t.wait(lambda: t.line(29).startswith(
+        "Search: 스타 채널 abc")), repr(t.line(29))
+    # gone with the prompt, not left behind
+    t.keys("\x1b", None, 0.5)
+    assert t.wait(lambda: "스타" not in t.text()), t.text()
 
 
 def test_playback_keys(app):

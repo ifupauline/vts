@@ -53,7 +53,7 @@ In the app, `?` shows the keys. The main ones:
 | Key                 | What                                              |
 | ------------------- | ------------------------------------------------- |
 | `1` `2` `3` `4`     | Home, Favourites, Library, Settings               |
-| `/`                 | search (recent searches, suggestions as you type, `F` for filters; Esc cancels); a link or an @handle opens what it names |
+| `/`                 | search (recent searches, suggestions as you type, `F` for filters; Esc cancels); a link or an @handle opens what it names, a handle without its @ is found too |
 | Enter, Backspace    | open, back                                        |
 | `p` `P` `a`         | play, play from here on, sound only               |
 | `Q`                 | play in a quality you choose (144p to 4K, or the sound only: high, medium or low) |
