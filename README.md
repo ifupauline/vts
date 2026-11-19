@@ -11,8 +11,9 @@ quick looks. Videos play in [mpv](https://mpv.io) while you keep
 browsing.
 
 - **Search like on the website.** Videos, Shorts, channels, playlists and
-  live streams, the same filters (upload date, duration, type, features,
-  sort order) and suggestions while you type.
+  live streams (a red LIVE before their title, SOON for those to come),
+  the same filters (upload date, duration, type, features, sort order)
+  and suggestions while you type.
 - **The video page.** Description, chapters, comments and replies, and
   the videos up next.
 - **Channels and playlists.** Their Videos, Shorts, Live and Playlists

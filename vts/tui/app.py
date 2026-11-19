@@ -230,8 +230,32 @@ class App:
             return f"stopped at {util.format_time(pos)}"
         return None
 
-    def details(self, it):
-        """the second line of a result: what it is, how long, who, how seen"""
+    def badge(self, it):
+        """ " LIVE " for a stream on now, " SOON " for one to come, or "" """
+        if "live" in it.f:
+            return " LIVE "
+        if "upcoming" in it.f:
+            return " SOON "
+        return ""
+
+    def draw_badge(self, y, x, it, width, selected=False):
+        """the badge of @it at @y, @x: the columns it took, with a space"""
+        b = self.badge(it)
+        if not b or width < len(b) + 10:
+            return 0
+        if b == " LIVE ":
+            attr = D.pair(D.C_BAR) | curses.A_BOLD
+        else:
+            attr = D.pair(D.C_ACCENT) | curses.A_REVERSE
+        D.put(y, x, b, attr)
+        D.put(y, x + len(b), " ", curses.A_REVERSE if selected else 0)
+        return len(b) + 1
+
+    def details(self, it, badge=False):
+        """
+        the second line of a result: what it is, how long, who, how seen
+        (without "LIVE" or "upcoming" when the @badge says it)
+        """
         def parts(*ss):
             return " · ".join(s for s in ss if s)
         if it.kind == "channel":
@@ -245,6 +269,8 @@ class App:
             when = util.ago(it["date"]) or it["date"]
         length = ("LIVE" if "live" in it.f else "upcoming"
                   if "upcoming" in it.f else it["duration"])
+        if badge and self.badge(it):
+            length = None
         return parts("Short" if it.kind == "short" else None, length,
                      it["channel"], it["views"], when, self.mark(it))
 
@@ -252,9 +278,10 @@ class App:
         it = s.items[i]
         attr = curses.A_REVERSE | curses.A_BOLD if selected else curses.A_BOLD
         D.put(y, 0, "▌" if selected else " ")
-        D.text(y, 1, it.get("title"), self.cols - 2, attr)
+        b = self.draw_badge(y, 1, it, self.cols - 2, selected)
+        D.text(y, 1 + b, it.get("title"), self.cols - 2 - b, attr)
         if rows > 1:
-            D.text(y + 1, 3, self.details(it), self.cols - 4,
+            D.text(y + 1, 3, self.details(it, bool(b)), self.cols - 4,
                    D.pair(D.C_DIM))
 
     def entry_rows(self, s, i):
@@ -378,8 +405,11 @@ class App:
             D.text(y + rows // 2, x + cols // 2 - 1, "…", 1,
                    D.pair(D.C_DIM))
             y += rows + 1
+        if self.draw_badge(y, x, it, cols):
+            y += 1
         y += D.wrapped(y, x, it.get("title"), cols, 4, curses.A_BOLD)
-        y += D.wrapped(y, x, self.details(it), cols, 3, D.pair(D.C_DIM))
+        y += D.wrapped(y, x, self.details(it, bool(self.badge(it))), cols,
+                       3, D.pair(D.C_DIM))
         if it["description"] and y + 1 < D.lines() - 1:
             D.wrapped(y + 1, x, it["description"], cols,
                       D.lines() - 2 - (y + 1))

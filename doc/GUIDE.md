@@ -67,7 +67,8 @@ searching for its words; and when YouTube finds nothing for a word, vts
 tries it as a channel's handle (`maetube0130`). The results open over where you were,
 so Backspace goes back there. On the results, `F` sets the filters:
 type, upload date, duration, sort order and features (live, 4K,
-subtitles...).
+subtitles...). In every list, a live stream has a white on red LIVE
+before its title, and one still to come a SOON.
 
 ![Search, with YouTube's suggestions while typing](screenshots/suggestions.svg)
 

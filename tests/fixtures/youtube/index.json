@@ -194,6 +194,14 @@
         "hl": "en"
       },
       "file": "search-nothing.json"
+    },
+    {
+      "endpoint": "search",
+      "match": {
+        "query": "lofi radio",
+        "hl": "en"
+      },
+      "file": "search-live.json"
     }
   ]
 }

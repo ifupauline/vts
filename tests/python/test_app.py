@@ -137,6 +137,21 @@ def test_wide_letters_by_hand(app, tmp_path):
     assert t.wait(lambda: "스타" not in t.text()), t.text()
 
 
+def test_live_badge(app):
+    # live streams: a white on red LIVE before the title
+    t = app()
+    t.keys("/")
+    t.keys("lofi radio\r", "Search: lofi radio")
+    assert t.wait(lambda: "watching" in t.text()), t.text()
+    rows = [y for y in range(30) if t.line(y).startswith(("▌ LIVE ",
+                                                           "  LIVE "))]
+    assert rows, t.text()
+    cell = t.screen.buffer[rows[0]][2]
+    assert (cell.data, cell.fg, cell.bg) == ("L", "white", "red"), cell
+    # said once: not again in the second line
+    assert not t.line(rows[0] + 1).lstrip().startswith("LIVE"), t.text()
+
+
 def test_playback_keys(app):
     t = app()
     t.keys("/")
