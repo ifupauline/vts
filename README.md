@@ -54,6 +54,7 @@ In the app, `?` shows the keys. The main ones:
 | Key                 | What                                              |
 | ------------------- | ------------------------------------------------- |
 | `1` `2` `3` `4`     | Home, Favourites, Library, Settings               |
+| `b`                 | the next site: YouTube, Twitch, SOOP (Twitch and SOOP are on their way) |
 | `/`                 | search (recent searches, suggestions as you type, `F` for filters; Esc cancels); a link or an @handle opens what it names, a handle without its @ is found too |
 | Enter, Backspace    | open, back                                        |
 | `p` `P` `a`         | play, play from here on, sound only               |

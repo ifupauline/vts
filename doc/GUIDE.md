@@ -58,6 +58,12 @@ keys; `q` goes back, and quits from one of the four sections:
   now", which does what `vts update` does. Nothing needs a file edited
   by hand.
 
+The top bar names three sites: YouTube, Twitch and SOOP. `b` goes to the
+next one, in its own colours (YouTube red, Twitch purple, SOOP blue),
+back where you left it; the `start_site` setting says which one vts
+opens on. Twitch and SOOP are on their way: for now their Home only
+lists their favourites.
+
 `/` searches, from anywhere: your recent searches come first (Delete
 forgets one), then as you type, suggestions come as on the website
 (Tab or the arrows pick one); Enter searches, Esc (or Backspace when

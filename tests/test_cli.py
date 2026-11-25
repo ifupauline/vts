@@ -940,7 +940,8 @@ def test_tui(vts, work):
     t = Tui(vts, ["-c", conf], env)
     try:
         check(t.pump("No favourite channels yet."), f"home: {t.text()!r}")
-        check(t.line(0).startswith(" vts \u203a Home"), "home: top bar")
+        check(t.line(0).startswith(" vts  YouTube  Twitch  SOOP  \u203a "
+                                   "Home"), f"home: top bar {t.line(0)!r}")
 
         # search, with suggestions while typing
         t.keys("/")

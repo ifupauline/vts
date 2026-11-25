@@ -9,7 +9,7 @@ import curses
 import os
 
 from vts import channel as ch
-from vts import check, config, platform, util
+from vts import check, config, platform, sites, util
 from vts import search as search_mod
 from vts import video as video_mod
 from vts.library import WATCH_LATER, Download, LibError
@@ -75,7 +75,7 @@ class Home(Screen):
         self.labels = {}
         cont = 0
         try:
-            for w in app.lib.hist_list(50):
+            for w in app.lib.hist_list(50, "youtube"):
                 if cont >= HOME_CONTINUE:
                     break
                 if w.watched or w.position <= 0:
@@ -128,6 +128,50 @@ class Home(Screen):
 
 def home(app):
     s = Home("Home")
+    s.load(app)
+    return s
+
+
+class SiteHome(Screen):
+    """Twitch's and SOOP's Home: their favourite channels"""
+    hints = "b next site  / find a channel  ? help  q quit"
+
+    def __init__(self, site):
+        super().__init__("Home")
+        self.site = site
+
+    def load(self, app):
+        self.items = []
+        self.labels = {}
+        try:
+            for f in app.lib.favs(self.site):
+                self.items.append(Item("channel", id=f.id, title=f.name,
+                                       handle=f.handle))
+        except LibError as e:
+            app.failed(e)
+        if self.items:
+            self.labels[0] = "Your favourites"
+        # an empty Home says why in its header, not "Nothing here"
+        self.done = bool(self.items)
+
+    def reload(self, app):
+        self.load(app)
+
+    def header(self, app, y):
+        if self.items:
+            return y
+        name = sites.NAMES[self.site]
+        D.text(y + 1, 2, f"No {name} favourites yet.", app.cols - 4,
+               curses.A_BOLD)
+        D.text(y + 3, 2, f"Finding {name} channels comes with the next "
+               "update of vts; then / finds one and f keeps it.",
+               app.cols - 4)
+        D.text(y + 4, 2, "b goes to the next site.", app.cols - 4)
+        return y + 6
+
+
+def site_home(app, site):
+    s = SiteHome(site)
     s.load(app)
     return s
 

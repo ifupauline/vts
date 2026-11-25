@@ -487,14 +487,15 @@ class Library:
             return 0
         return r[0] if r and not r[1] else 0
 
-    def hist_list(self, limit=0):
-        """the history, most recent first"""
+    def hist_list(self, limit=0, site=None):
+        """the history (of @site, None: all), most recent first"""
+        where, args = sites.sql_filter(site, "video_id")
         return [Watch(_item(r[:6]), r[6], r[7], bool(r[8]), r[9])
                 for r in self._run(
                     "SELECT video_id, kind, title, channel, channel_id,"
                     " duration, position, length, watched, last FROM history"
-                    " ORDER BY seq DESC LIMIT ?",
-                    (limit if limit > 0 else -1,))]
+                    f" WHERE {where} ORDER BY seq DESC LIMIT ?",
+                    args + (limit if limit > 0 else -1,))]
 
     def hist_marks(self, ids):
         """{video id: (position, length, watched)} of those in the history"""

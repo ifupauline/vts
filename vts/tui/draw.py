@@ -15,7 +15,19 @@ import curses
 from vts import platform
 from vts import text as T
 
-C_ACCENT, C_DIM, C_BAR, C_ERROR, C_SELECT = range(1, 6)
+C_ACCENT, C_DIM, C_BAR, C_ERROR, C_SELECT, C_LIVE = range(1, 7)
+
+# each site's colours: headings (accent), second lines (dim), the top bar's
+# background; in a terminal of 256 colours, then of 8 or 16
+THEMES = {
+    "youtube": {256: (160, 37, 160), 8: ("RED", "CYAN", "RED")},
+    # Twitch's purple
+    "twitch": {256: (135, 183, 92), 8: ("MAGENTA", "MAGENTA", "MAGENTA")},
+    # the blue of Korea's flag, lighter for the second lines
+    "soop": {256: (33, 117, 25), 8: ("BLUE", "CYAN", "BLUE")},
+}
+_theme = "youtube"
+_bg = -1
 
 scr = None  # the curses window, once the app has started
 
@@ -33,12 +45,35 @@ def colours():
         bg = -1
     except curses.error:
         bg = curses.COLOR_BLACK
-    curses.init_pair(C_ACCENT, curses.COLOR_RED, bg)
-    curses.init_pair(C_DIM, curses.COLOR_CYAN if curses.COLORS >= 8 else -1,
-                     bg)
-    curses.init_pair(C_BAR, curses.COLOR_WHITE, curses.COLOR_RED)
+    global _bg
+    _bg = bg
     curses.init_pair(C_ERROR, curses.COLOR_RED, bg)
     curses.init_pair(C_SELECT, -1, bg)
+    # a stream on now: red on every site, as on the websites
+    curses.init_pair(C_LIVE, curses.COLOR_WHITE, curses.COLOR_RED)
+    theme(_theme)
+
+
+def theme(site):
+    """the colours of @site (youtube, twitch, soop) from now on"""
+    global _theme
+    _theme = site if site in THEMES else "youtube"
+    if not curses.has_colors():
+        return
+    t = THEMES[_theme]
+    if curses.COLORS >= 256:
+        accent, dim, bar = t[256]
+        # YouTube's as they always were, in every terminal
+        if _theme == "youtube":
+            accent, dim, bar = t[8]
+    else:
+        accent, dim, bar = t[8]
+    if isinstance(accent, str):
+        accent, dim, bar = (getattr(curses, f"COLOR_{c}")
+                            for c in (accent, dim, bar))
+    curses.init_pair(C_ACCENT, accent, _bg)
+    curses.init_pair(C_DIM, dim if curses.COLORS >= 8 else -1, _bg)
+    curses.init_pair(C_BAR, curses.COLOR_WHITE, bar)
 
 
 def pair(n):
@@ -135,7 +170,9 @@ def _sgr(attr):
         except curses.error:
             fg = bg = -1
         for c, base in ((fg, 30), (bg, 40)):
-            if c in _ANSI:
+            if c >= 16:
+                codes.append(f"{base + 8};5;{c}")
+            elif c in _ANSI:
                 codes.append(str(base + _ANSI[c]))
             elif 8 <= c < 16 and c - 8 in _ANSI:
                 codes.append(str(base + 60 + _ANSI[c - 8]))

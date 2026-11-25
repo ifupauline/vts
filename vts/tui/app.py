@@ -11,7 +11,7 @@ import sys
 import threading
 import time
 
-from vts import config, log, platform, player, update, util
+from vts import config, log, platform, player, sites, update, util
 from vts import text as T
 from vts.library import EXISTS, WATCH_LATER, LibError, Library
 from vts.rules import BadRules, valid_channel_id
@@ -102,6 +102,8 @@ HELP = (
     "  Enter                                   open",
     "  Backspace h Esc                         back",
     "  1 Home  2 Favourites  3 Library  4 Settings",
+    "  b                                       the next site: YouTube,"
+    " Twitch, SOOP",
     "  /  s                                    search (recent ones first)",
     "  r                                       reload",
     "On a video",
@@ -147,11 +149,39 @@ class App:
         self.shown = Shown()
         self.entry_y = []  # where each entry was drawn, for the mouse
         self.entry_first = 0
+        self.site = "youtube"  # the one shown: in sites.SITES
+        self.stacks = {}  # site -> its screens, while another is shown
         self.marks = {}  # video id -> (position, length, watched)
         self.chapters = {}  # video id -> chapters, for T
         self._updating = None
 
     # --- screens -----------------------------------------------------------
+
+    # --- sites: YouTube, Twitch, SOOP, each with its screens ---------------
+
+    def home_of(self, site):
+        """the Home of @site"""
+        from vts.tui import screens as S
+        return S.home(self) if site == "youtube" else S.site_home(self, site)
+
+    def go_site(self, site):
+        """to @site, where it was left (its Home the first time)"""
+        if site == self.site and self.stack:
+            return
+        self.hide_thumb()
+        if self.stack:
+            self.stacks[self.site] = self.stack
+        self.site = site
+        D.theme(site)
+        self.stack = self.stacks.get(site) or []
+        if not self.stack:
+            self.root(self.home_of(site))
+        save_last_site(site)
+
+    def next_site(self):
+        """b: YouTube, then Twitch, then SOOP"""
+        i = sites.SITES.index(self.site)
+        self.go_site(sites.SITES[(i + 1) % len(sites.SITES)])
 
     def push(self, s):
         # a screen that couldn't load has already said why
@@ -198,7 +228,20 @@ class App:
 
     def draw_top(self):
         D.hline(0, 0, D.cols(), D.pair(D.C_BAR))
-        left = " vts" + "".join(f" › {s.title}" for s in self.stack)
+        # the three sites, the one shown standing out, then where it is
+        x = 0
+        D.text(0, x, " vts ", D.cols(), D.pair(D.C_BAR) | curses.A_BOLD)
+        x += 5
+        roomy = D.cols() >= 70
+        for site in sites.SITES:
+            if not roomy and site != self.site:
+                continue
+            name = f" {sites.NAMES[site]} "
+            attr = D.pair(D.C_BAR) | (curses.A_REVERSE | curses.A_BOLD
+                                      if site == self.site else 0)
+            D.text(0, x, name, D.cols() - x, attr)
+            x += len(name)
+        left = "".join(f" › {s.title}" for s in self.stack)
         right = ""
         if self.downloads:
             # the first one, and how many more
@@ -212,8 +255,9 @@ class App:
             right += (f"{mark} {util.format_time(max(0, pos))}/"
                       f"{util.format_time(length) if length else '--'} "
                       f"{self.playing or ''} ")
-        w = min(T.width(right), D.cols() // 2)
-        D.text(0, 0, left, D.cols() - w - 1, D.pair(D.C_BAR) | curses.A_BOLD)
+        w = min(T.width(right), max(0, D.cols() - x) // 2)
+        D.text(0, x, left, D.cols() - x - w - 1,
+               D.pair(D.C_BAR) | curses.A_BOLD)
         if w:
             D.text(0, D.cols() - w, right, w, D.pair(D.C_BAR))
 
@@ -244,7 +288,7 @@ class App:
         if not b or width < len(b) + 10:
             return 0
         if b == " LIVE ":
-            attr = D.pair(D.C_BAR) | curses.A_BOLD
+            attr = D.pair(D.C_LIVE) | curses.A_BOLD
         else:
             attr = D.pair(D.C_ACCENT) | curses.A_REVERSE
         D.put(y, x, b, attr)
@@ -1220,10 +1264,14 @@ class App:
             self.pop()
         elif key == "?":
             self.help = True
+        elif key == "b":
+            self.next_site()
         elif key == "1":
-            self.root(S.home(self))
+            self.root(self.home_of(self.site))
         elif key == "2":
-            self.root(S.favourites(self))
+            # Twitch's and SOOP's Homes are their favourites
+            self.root(S.favourites(self) if self.site == "youtube"
+                      else self.home_of(self.site))
         elif key == "3":
             self.root(S.library(self))
         elif key == "4":
@@ -1333,8 +1381,10 @@ class App:
         return self.confirm(q)
 
     def run(self):
-        from vts.tui import screens as S
-        self.root(S.home(self))
+        start = self.cfg.start_site
+        if start == "last":
+            start = load_last_site()
+        self.go_site(start)
         # say now, not after a video failed, when nothing can play
         problem = update.can_play(self.cfg.player, self.cfg.downloader)
         if problem:
@@ -1372,6 +1422,32 @@ class App:
                 self.poll_downloads()  # one may have just ended
                 if self.downloads and not self.confirm_quit():
                     self.quit = False
+
+
+def _last_site_path():
+    d = platform.data_dir()
+    return os.path.join(d, "last-site") if d else None
+
+
+def save_last_site(site):
+    """kept for start_site = last"""
+    path = _last_site_path()
+    if not path:
+        return
+    try:
+        platform.mkdirs(os.path.dirname(path))
+        platform.write_atomic(path, site + "\n")
+    except OSError:
+        pass
+
+
+def load_last_site():
+    path = _last_site_path()
+    try:
+        site = platform.read_file(path, 64).strip() if path else ""
+    except OSError:
+        site = ""
+    return site if site in sites.SITES else "youtube"
 
 
 def run(cfg):

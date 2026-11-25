@@ -85,6 +85,43 @@ def test_settings_screen(app):
     assert t.wait(lambda: "ok  search" in t.text(), 15), t.text()
 
 
+def test_sites(app):
+    t = app()
+    assert " vts  YouTube  Twitch  SOOP  › Home" in t.line(0), t.line(0)
+    bar = t.screen.buffer[0]
+    youtube_bg = bar[7].bg
+    # YouTube stands out (reversed), the others don't
+    assert bar[7].reverse and not bar[16].reverse, t.line(0)
+    # where it was is kept: Library on YouTube
+    t.keys("3", "Library")
+    assert t.keys("b", "No Twitch favourites yet."), t.text()
+    assert "› Home" in t.line(0)
+    # Twitch's colours
+    bar = t.screen.buffer[0]
+    twitch_bg = bar[0].bg
+    assert bar[16].reverse and twitch_bg != youtube_bg, (bar[0], youtube_bg)
+    assert t.keys("b", "No SOOP favourites yet."), t.text()
+    assert t.screen.buffer[0][0].bg not in (youtube_bg, twitch_bg)
+    t.keys("b", None, 0.3)
+    assert t.wait(lambda: "YouTube  Twitch  SOOP  › Library" in t.line(0)), \
+        t.line(0)
+    assert t.screen.buffer[0][0].bg == youtube_bg
+
+
+def test_start_site(app):
+    with open(app.conf, "a") as f:
+        f.write("start_site = last\n")
+    t = app()
+    t.keys("bb", "No SOOP favourites yet.")
+    t.keys("q", None, 0.5)
+    t = app()
+    assert t.wait(lambda: "No SOOP favourites yet." in t.text()), t.text()
+    with open(app.conf, "a") as f:
+        f.write("start_site = twitch\n")
+    t = app()
+    assert t.wait(lambda: "No Twitch favourites yet." in t.text()), t.text()
+
+
 def test_recent_searches(app):
     t = app()
     t.keys("/")
