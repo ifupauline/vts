@@ -60,8 +60,8 @@ def test_settings_screen(app):
     assert t.wait(lambda: "player = " in t.text() and
                   "The program that plays videos" in t.text()), t.text()
     for section in ("General", "YouTube"):
-        assert any(t.line(y).strip() == section for y in range(30)), \
-            t.text()
+        assert t.wait(lambda: any(t.line(y).strip() == section
+                                  for y in range(30))), t.text()
     # quality, the 3rd of YouTube's: from a menu, written in the file
     t.keys("jjjjjjjjj", "quality = 1080")
     assert t.wait(lambda: "highest quality" in t.text())
