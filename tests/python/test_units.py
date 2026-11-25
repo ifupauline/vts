@@ -496,3 +496,17 @@ def test_colours(monkeypatch):
     # Windows Terminal reached from a console window has no WT_SESSION
     monkeypatch.setattr(platform, "WINDOWS", True)
     assert thumbs.colours() == "full"
+
+
+def test_every_package_installed():
+    # pyproject lists the packages: a new folder must be in it
+    import re
+    root = os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))))
+    with open(os.path.join(root, "pyproject.toml"), encoding="utf-8") as f:
+        line = re.search(r"^packages = \[(.*)\]$", f.read(), re.M)
+    listed = set(re.findall(r'"([a-z.]+)"', line.group(1)))
+    found = {os.path.relpath(d, root).replace(os.sep, ".")
+             for d, _, files in os.walk(os.path.join(root, "vts"))
+             if "__init__.py" in files}
+    assert found == listed
