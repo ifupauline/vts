@@ -237,6 +237,48 @@
         ]
       },
       "file": "twitch-users-home.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "chapi.sooplive.co.kr/api/momo130/station"
+      },
+      "file": "soop-station-momo130.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "chapi.sooplive.co.kr/api/brainzerg7/station"
+      },
+      "file": "soop-station-brainzerg7.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "chapi.sooplive.co.kr/api/lockedbj/station"
+      },
+      "file": "soop-station-lockedbj.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "chapi.sooplive.co.kr/api/momo130/vods/review?page=1&per_page=20&orderby=reg_date"
+      },
+      "file": "soop-past-momo130-1.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "chapi.sooplive.co.kr/api/momo130/vods/review?page=2&per_page=20&orderby=reg_date"
+      },
+      "file": "soop-past-momo130-2.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "sch.sooplive.co.kr/api.php?m=bjSearch&v=3.0&szKeyword=%EA%B9%80%EC%A0%95%EC%9A%B0&nPageNo=1&nListCnt=20&c=UTF-8"
+      },
+      "file": "soop-search-kimjungwoo.json"
     }
   ]
 }

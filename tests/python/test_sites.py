@@ -121,4 +121,96 @@ def test_page_urls():
     assert sites.page_url("soop:brainzerg7") == \
         "https://www.sooplive.co.kr/station/brainzerg7"
     assert sites.page_url("soop:vod:123") == \
-        "https://vod.sooplive.co.kr/player/123"
+        "https://vod.sooplive.com/player/123"
+
+
+# --- SOOP ----------------------------------------------------------------
+
+@pytest.fixture
+def soop(youtube, monkeypatch):
+    from vts.sites import soop as sp
+    monkeypatch.setenv("VTS_SOOP_URL", youtube.url)
+    return sp.Soop()
+
+
+def test_soop_find(soop):
+    found = soop.find("김정우")
+    assert [it["id"] for it in found][:1] == ["soop:momo130"]
+    first = found[0]
+    assert first.kind == "channel" and first["title"] == "effort김정우"
+    assert first["handle"] == "momo130" and first["subscribers"].endswith(
+        " fans")
+    assert first["thumbnail"].startswith("https://")
+    # its id typed finds it too, first (and the search isn't needed)
+    assert soop.find("@momo130")[0]["id"] == "soop:momo130"
+
+
+def test_soop_channel_and_status(soop):
+    c, live = soop.channel("soop:momo130")
+    assert c["title"] == "effort김정우" and "live" in c.f
+    assert live["id"] == "soop:live:momo130" and "live" in live.f
+    assert live["views"].endswith(" watching")
+    assert live["published"].startswith("on for ")
+    assert live["locked"] is None
+    got = soop.status(["soop:momo130", "soop:brainzerg7", "soop:nosuchbj"])
+    assert [(c["id"], s is not None) for c, s in got] == [
+        ("soop:momo130", True), ("soop:brainzerg7", False)]
+    # what needs an account says so
+    _, locked = soop.channel("soop:lockedbj")
+    assert locked["locked"] == "19+"
+    with pytest.raises(sites.SiteError):
+        soop.channel("soop:nosuchbj")
+
+
+def test_soop_past(soop):
+    p = soop.past("soop:momo130")
+    assert len(p.items) == 3 and p.continuation == 2 and p.estimated > 100
+    v = p.items[0]
+    assert v.kind == "video" and v["id"].startswith("soop:vod:")
+    assert sites.valid_video_id(v["id"]) and not sites.is_live(v["id"])
+    assert v["channel_id"] == "soop:momo130" and v["channel"] == \
+        "effort김정우"
+    assert v["duration"].count(":") >= 1 and v["views"].endswith(" views")
+    assert v["published"].endswith(" ago")
+    assert v["thumbnail"].startswith("https://videoimg.sooplive.com/")
+    p2 = soop.past("soop:momo130", 2)
+    assert p2.continuation is None and p2.items[0]["id"] != v["id"]
+
+
+def test_soop_needs_a_browser(soop, monkeypatch):
+    # SOOP closes the door to what doesn't say it is a browser
+    soop.d = dict(soop.d, user_agent="vts")
+    with pytest.raises(sites.SiteError):
+        soop.channel("soop:momo130")
+
+
+@pytest.mark.parametrize("text, ident", [
+    ("https://www.sooplive.co.kr/station/momo130", "soop:momo130"),
+    ("play.sooplive.co.kr/brainzerg7/298855055", "soop:brainzerg7"),
+    ("https://ch.sooplive.co.kr/MOMO130", "soop:momo130"),
+    ("https://vod.sooplive.com/player/213439935", "soop:vod:213439935"),
+    ("https://vod.sooplive.co.kr/player/213439935/catch", "soop:vod:213439935"),
+    ("https://bj.afreecatv.com/momo130", "soop:momo130"),
+    ("https://www.sooplive.co.kr/directory/category", None),
+    ("https://evil.example/station/momo130", None),
+    ("https://www.twitch.tv/esl_sc2", None),
+])
+def test_soop_links(soop, text, ident):
+    assert soop.link(text) == ident
+
+
+def test_soop_on_for():
+    from vts.sites import soop as sp
+    assert sp.on_for("2026-11-25 18:38:44", "2026-11-25 22:06:00") == \
+        "on for 3 h 27"
+    assert sp.on_for("2026-11-25 18:38:44", "2026-11-25 18:50:44") == \
+        "on for 12 min"
+    assert sp.on_for("later", "2026-11-25 18:50:44") is None
+
+
+def test_soop_description():
+    from vts.sites import soop as sp
+    d = sp.load_description()
+    assert d["user_agent"].startswith("Mozilla/") and d["revision"] > 2026e6
+    for k in ("search", "station", "past", "live_thumbnail"):
+        assert d[k].startswith("https://")

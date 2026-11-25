@@ -81,11 +81,14 @@ def ytdl_sort(quality, sound):
 
 
 def video_url(it):
-    """the page of @it on YouTube, built from its checked id"""
+    """the page of @it on YouTube (or SOOP), built from its checked id"""
     ident = it["id"] if isinstance(it, Item) else it
-    if not valid_video_id(ident):
-        raise ValueError("not a video")
-    return f"https://www.youtube.com/watch?v={ident}"
+    if valid_video_id(ident):
+        return f"https://www.youtube.com/watch?v={ident}"
+    # a past broadcast of SOOP: yt-dlp plays it from its page
+    if sites.valid_video_id(ident) and not sites.is_live(ident):
+        return sites.page_url(ident)
+    raise ValueError("not a video")
 
 
 def langs_ok(s):
@@ -153,8 +156,7 @@ class Player:
             items = items[:1]
         for i, it in enumerate(items):
             local = "file" in it.f
-            if not local and not (valid_video_id(it["id"]) or
-                                  sites.is_live(it["id"])):
+            if not local and not sites.valid_video_id(it["id"]):
                 raise PlayError("not a video")
             start = 0
             if i == 0 and o.start >= 0:

@@ -1,0 +1,11 @@
+{
+  "about": "How vts asks SOOP (sooplive.co.kr) for its channels, their live streams and past broadcasts, as its website does (no account). SOOP closes connections without a browser's User-Agent. Updated with youtube.json: bump revision (YYYYMMDDNN) when changing it.",
+  "revision": 2026112501,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0 Safari/537.36",
+  "search": "https://sch.sooplive.co.kr/api.php?m=bjSearch&v=3.0&szKeyword={query}&nPageNo=1&nListCnt=20&c=UTF-8",
+  "station": "https://chapi.sooplive.co.kr/api/{id}/station",
+  "past": "https://chapi.sooplive.co.kr/api/{id}/vods/review?page={page}&per_page=20&orderby=reg_date",
+  "live_thumbnail": "https://liveimg.sooplive.co.kr/m/{broad_no}",
+  "time_zone": 9,
+  "parallel": 8
+}

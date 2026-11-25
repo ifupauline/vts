@@ -26,10 +26,12 @@ browsing.
   you export from Google Takeout (or an OPML file), exported back when
   you want, and a desktop notification for each new video, even with vts
   closed.
-- **Twitch's live streams too.** `b` goes to Twitch (in purple): your
-  favourite channels, those live first, played in mpv without Twitch's
-  ads (through Streamlink, which comes with vts), in the quality you
-  choose, and recorded to a file if you want. No account either.
+- **Twitch and SOOP too.** `b` goes to Twitch (in purple), then to SOOP
+  (in blue): your favourite channels, those live first, played in mpv
+  without Twitch's ads (through Streamlink, which comes with vts), in the
+  quality you choose, and recorded to a file if you want. On SOOP, each
+  channel's past broadcasts too, resumed where you stopped. No account
+  either.
 - **Your library, on your computer.** History, Watch later and your own
   playlists, never sent anywhere.
 - **Thumbnails in the terminal,** as pictures where the terminal can show
@@ -58,7 +60,7 @@ In the app, `?` shows the keys. The main ones:
 | Key                 | What                                              |
 | ------------------- | ------------------------------------------------- |
 | `1` `2` `3` `4`     | Home, Favourites, Library, Settings               |
-| `b`                 | the next site: YouTube, Twitch, SOOP (SOOP is on its way) |
+| `b`                 | the next site: YouTube, Twitch, SOOP |
 | `/`                 | search (recent searches, suggestions as you type, `F` for filters; Esc cancels); a link or an @handle opens what it names, a handle without its @ is found too |
 | Enter, Backspace    | open, back                                        |
 | `p` `P` `a`         | play, play from here on, sound only               |

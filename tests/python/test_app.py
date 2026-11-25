@@ -183,6 +183,47 @@ def test_twitch(app):
     assert t.wait(lambda: "Offline" not in t.text()), t.text()
 
 
+def test_soop(app):
+    t = app()
+    t.keys("bb", "No SOOP favourites yet.")
+    t.keys("/", "Find a SOOP channel")
+    assert t.keys("김정우\r", "Find: 김정우"), t.text()
+    assert t.wait(lambda: "effort김정우" in t.line(1)), t.text()
+    # its page: the live stream, then its past broadcasts
+    t.keys("\r", "Past broadcasts")
+    assert t.wait(lambda: "momo130 · 121,652 fans" in t.text()), t.text()
+    assert "Live now" in t.text() and "LIVE" in t.text()
+    assert t.keys("f", "effort김정우 is a favourite, on SOOP's Home")
+    # down to the end: the next page comes
+    assert t.text().count(" views · ") == 3, t.text()
+    t.keys("G", None, 0.5)
+    assert t.wait(lambda: t.text().count(" views · ") == 6), t.text()
+    # a past broadcast plays with yt-dlp, from SOOP's page, in
+    # soop.vod_quality (best)
+    t.keys("gjj\r", "Playing")
+    assert t.wait(lambda: mpv_runs(app.log)), t.text()
+    run = mpv_runs(app.log)[-1]
+    assert run[-1].startswith("https://vod.sooplive.com/player/"), run
+    assert "--ytdl-format=bestvideo+bestaudio/best" in run, run
+    t.keys("x", "Stopped")
+    # stopped in the middle: on SOOP's Home
+    t.keys("1", "Continue watching")
+    assert t.wait(lambda: "stopped at 0:30" in t.text()), t.text()
+    # a stream that needs an account says so
+    t.keys("/")
+    t.keys("https://play.sooplive.co.kr/lockedbj\r", "Locked")
+    assert t.wait(lambda: "19+" in t.text()), t.text()
+    t.keys("\r", None, 0.3)
+    assert t.wait(lambda: "needs a SOOP account" in t.text()), t.text()
+
+
+def mpv_runs(log):
+    if not log.exists():
+        return []
+    with open(log) as f:
+        return [e["argv"] for e in map(json.loads, f) if "argv" in e]
+
+
 def test_recent_searches(app):
     t = app()
     t.keys("/")

@@ -180,18 +180,42 @@ class SiteHome(Screen):
         if live:
             self.labels[0] = "Live now"
         self.items = [s for _, s in live]
+        # SOOP's past broadcasts stopped in the middle
+        cont = self.continuing(app)
+        if cont:
+            self.labels[len(self.items)] = "Continue watching"
+            self.items += cont
         if offline:
             self.labels[len(self.items)] = (
                 "Offline" if not self.failed else
                 f"Your favourites ({name} didn't answer)")
             self.items += offline
 
+    def continuing(self, app):
+        out = []
+        try:
+            for w in app.lib.hist_list(50, self.site):
+                if len(out) >= HOME_CONTINUE:
+                    break
+                if w.watched or w.position <= 0 or sites.is_live(
+                        w.item["id"]):
+                    continue
+                it = w.item
+                it.f["published"] = (f"stopped at "
+                                     f"{util.format_time(w.position)} of "
+                                     f"{util.format_time(w.length)}")
+                out.append(it)
+        except LibError as e:
+            app.failed(e)
+        return out
+
     def reload(self, app):
         self.load(app)
 
     def key(self, app, key):
         it = self.selected()
-        if key in ("-", "DELETE", "f") and it is not None:
+        if key in ("-", "DELETE", "f") and it is not None and (
+                it.kind == "channel" or sites.is_live(it["id"])):
             ident = it["id"] if it.kind == "channel" else it["channel_id"]
             app.favourite(ident, it["channel"] or it["title"])
             self.load(app)
@@ -251,7 +275,10 @@ def site_search(app, site, query):
 
 
 class SiteChannel(Screen):
-    """a Twitch or SOOP channel: what it is, its live stream if it's on"""
+    """
+    a Twitch or SOOP channel: what it is, its live stream if it's on, and
+    (SOOP) its past broadcasts, newest first, more as the list goes down
+    """
     hints = "Enter play  Q quality  d record  f favourite  ? help"
 
     def __init__(self, ident):
@@ -259,6 +286,7 @@ class SiteChannel(Screen):
         self.ident = ident
         self.channel = None
         self.done = True
+        self.next = None  # the next page of past broadcasts
 
     def reload(self, app):
         site = sites.site_of(self.ident)
@@ -270,9 +298,36 @@ class SiteChannel(Screen):
             return False
         self.title = self.channel["title"]
         self.items = [live] if live else []
-        if live:
-            self.labels = {0: "Live now"}
+        self.labels = {0: "Live now"} if live else {}
+        if site == "soop":
+            self.hints = ("Enter play  Q quality  d download or record  w "
+                          "later  f favourite  ? help")
+            try:
+                p = sites.get(site).past(self.ident)
+            except sites.SiteError as e:
+                app.failed(e)
+                return True
+            if p.items:
+                n = f" ({p.estimated:,})" if p.estimated else ""
+                self.labels[len(self.items)] = f"Past broadcasts{n}"
+                self.items += p.items
+            self.next = p.continuation
+            self.done = not self.next
         return True
+
+    def more(self, app):
+        if not self.next:
+            return False
+        try:
+            p = sites.get(sites.site_of(self.ident)).past(self.ident,
+                                                          self.next)
+        except sites.SiteError as e:
+            app.failed(e)
+            return True
+        seen = {it["id"] for it in self.items}
+        self.items += [it for it in p.items if it["id"] not in seen]
+        self.next = p.continuation
+        return bool(self.next)
 
     def key(self, app, key):
         if key == "f" and self.channel:
@@ -293,7 +348,7 @@ class SiteChannel(Screen):
         y += 2
         if c["description"]:
             y += D.wrapped(y, 1, c["description"], app.cols - 2, 3)
-        if not self.items:
+        if not self.items or not sites.is_live(self.items[0]["id"]):
             D.text(y + 1, 1, "Not live right now.", app.cols - 2,
                    curses.A_BOLD)
             y += 2

@@ -148,6 +148,9 @@ def get(key):
         if key == "twitch":
             from vts.sites.twitch import Twitch
             _made[key] = Twitch()
+        elif key == "soop":
+            from vts.sites.soop import Soop
+            _made[key] = Soop()
         else:
             raise KeyError(key)
     return _made[key]
@@ -183,7 +186,8 @@ def page_url(ident):
     if what == "live":
         return f"https://play.sooplive.co.kr/{name}"
     if what == "vod":
-        return f"https://vod.sooplive.co.kr/player/{name}"
+        # yt-dlp knows SOOP's broadcasts by this address
+        return f"https://vod.sooplive.com/player/{name}"
     return f"https://www.sooplive.co.kr/station/{name}"
 
 

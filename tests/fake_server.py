@@ -137,6 +137,22 @@ class Handler(BaseHTTPRequestHandler):
                           [("Content-Type", "application/json")])
             else:
                 self.send(200, json.dumps({"data": {"users": []}}))
+        elif fixtures and url.path.startswith("/soop/"):
+            # SOOP's answers: by the address asked, host/path?query
+            asked = self.path[len("/soop/"):]
+            e = fixture_for("soop", json.dumps({"path": asked}))
+            if e and self.headers.get("User-Agent", "").startswith(
+                    "Mozilla/"):
+                ctype = "image/jpeg" if e["file"].endswith(".jpg") \
+                    else "application/json"
+                self.send(200, read_fixture(e["file"]),
+                          [("Content-Type", ctype)])
+            elif e:
+                # as SOOP does with what isn't a browser
+                self.close_connection = True
+                self.send(403, "")
+            else:
+                self.send(404, "{}")
         elif fixtures and url.path == "/" and self.command == "GET":
             self.send(200, read_fixture("home.html"),
                       [("Content-Type", "text/html")])

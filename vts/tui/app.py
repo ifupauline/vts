@@ -70,6 +70,16 @@ def as_live(it):
                 thumbnail=it["stream_thumbnail"], live=True)
 
 
+def height(q):
+    """a quality of the settings of Twitch or SOOP (best, 720, audio) as
+    the app's quality"""
+    if q == "best":
+        return config.QUALITY_BEST
+    if q == "audio":
+        return config.QUALITY_AUDIO
+    return int(q)
+
+
 def live_label(q):
     """ "best", "720p", "sound only" """
     return {"best": "best", "audio": "sound only"}.get(q, f"{q}p")
@@ -337,8 +347,8 @@ class App:
         other = sites.site_of(it["id"]) != "youtube"
         if it.kind == "channel" and other:
             if "live" in it.f:
-                return parts(None if badge else "LIVE", it["game"],
-                             it["views"])
+                return parts(None if badge else "LIVE", it["locked"],
+                             it["game"], it["views"])
             return parts(it["handle"], it["subscribers"], "offline"
                          if "offline" in it.f else None)
         if it.kind == "channel":
@@ -355,8 +365,8 @@ class App:
         if badge and self.badge(it):
             length = None
         return parts("Short" if it.kind == "short" else None, length,
-                     it["channel"], it["game"], it["views"], when,
-                     self.mark(it))
+                     it["locked"], it["channel"], it["game"], it["views"],
+                     when, self.mark(it))
 
     def entry_draw(self, s, i, y, rows, selected):
         it = s.items[i]
@@ -776,6 +786,9 @@ class App:
                 self.push(S.site_channel(self, it["id"]))
             elif sites.is_live(it["id"]):
                 self.play_live(it)
+            elif it.kind == "video":
+                # SOOP's past broadcasts have no page of their own here
+                self.play([it])
             return
         if it.kind == "channel":
             self.push(S.channel(self, it["id"]))
@@ -881,8 +894,18 @@ class App:
                         else 0)
         return None if i < 0 else qs[i]
 
+    def locked(self, it):
+        """a live stream vts can't play without an account: says why"""
+        if not it["locked"]:
+            return False
+        self.say(f"This live stream is {it['locked']}: it needs a SOOP "
+                 "account, which vts doesn't use", True)
+        return True
+
     def play_live(self, it, quality=None):
         """@it, a live stream, through Streamlink"""
+        if self.locked(it):
+            return
         self.stop_player()
         o = self.play_opts(self.quality)
         o.live_quality = quality or self.live_quality(it["id"])
@@ -898,6 +921,8 @@ class App:
 
     def record(self, it):
         """d on a live stream: written to a file until stopped"""
+        if self.locked(it):
+            return
         q = self.choose_live("Record in which quality?", it["id"])
         if q is None:
             return
@@ -928,6 +953,12 @@ class App:
             q = self.choose_live("Play in which quality?", it["id"])
             if q:
                 self.play_live(it, q)
+            return
+        if sites.site_of(it["id"]) == "soop":
+            q = self.choose_live("Play in which quality?", "soop:live:x",
+                                 self.cfg.soop_vod_quality)
+            if q:
+                self.play([it], height(q))
             return
         got = self.choose_quality("Play in which quality?", self.cfg.quality,
                                   self.cfg.sound_quality)
@@ -1034,6 +1065,9 @@ class App:
         if sites.is_live(videos[0]["id"]):
             self.play_live(videos[0])
             return
+        if quality is QUALITY_SETTING and \
+                sites.site_of(videos[0]["id"]) == "soop":
+            quality = height(self.cfg.soop_vod_quality)
         self.stop_player()
         o = self.play_opts(quality if quality is not None
                            else self.cfg.quality,

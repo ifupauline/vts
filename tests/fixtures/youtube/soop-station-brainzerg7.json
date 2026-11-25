@@ -1,0 +1,347 @@
+{
+ "profile_image": "//profile.img.sooplive.co.kr/LOGO/br/brainzerg7/brainzerg7.jpg",
+ "station": {
+  "display": {
+   "main_type": "1110",
+   "title_type": "HTML",
+   "title_text": "<p><br />\r\n<img id=\"preImg\" src=\"http://stimg.afreecatv.com/STATION/8/16248678/60365c1082b69e5bc.jpg\" /><br />\r\n&nbsp;</p>\r\n\r\n<p><img id=\"preImg\" src=\"http://stimg.afreecatv.com/STATION/8/16248678/44355c108196699a5.jpg\" /><br />\r\n&nbsp;</p>\r\n\fNaN\f44355c108196699a5.jpg,60365c1082b69e5bc.jpg",
+   "profile_text": "김윤환",
+   "skin_type": 0,
+   "skin_no": 1,
+   "title_skin_image": "",
+   "ai_profile_conf_yn": "A",
+   "ai_profile_str": "김윤환은 스타크래프트 프로게이머 출신으로 ‘Calm’이라는 닉네임으로 활약했습니다. 세밀한 운영과 안정적인 경기력을 보여주었으며, 현재는 스트리머로 활동하며 풍부한 경험과 해설을 팬들과 공유하고 있습니다."
+  },
+  "groups": [
+   {
+    "idx": 8131,
+    "group_no": 1,
+    "priority": 1,
+    "info": {
+     "group_name": "파트너",
+     "translation_group_name": "{\"ko_KR\":\"파트너\", \"en_US\":\"Partner\", \"th_TH\":\"พันธมิตร\", \"zh_TW\":\"合約\", \"zh_CN\":\"合约\"}",
+     "group_class_name": "badge_partner",
+     "group_background_color": "#693bed"
+    }
+   },
+   {
+    "idx": 4375,
+    "group_no": 2,
+    "priority": 2,
+    "info": {
+     "group_name": "베스트",
+     "translation_group_name": "{\"ko_KR\":\"베스트\", \"en_US\":\"Best\", \"th_TH\":\"ดีที่สุด\", \"zh_TW\":\"最佳\", \"zh_CN\":\"最佳\"}",
+     "group_class_name": "badge_best",
+     "group_background_color": "#00ca55"
+    }
+   },
+   {
+    "idx": 8413,
+    "group_no": 15,
+    "priority": 8,
+    "info": {
+     "group_name": "프로게이머",
+     "translation_group_name": "{\"ko_KR\":\"프로게이머\", \"en_US\":\"Pro Gamer\", \"th_TH\":\"สตรีมเมอร์โปรเกมเมอร์\", \"zh_TW\":\"職業選手實況主\", \"zh_CN\":\"职业选手主播\"}",
+     "group_class_name": "badge_progamer",
+     "group_background_color": "#28bfff"
+    }
+   }
+  ],
+  "menus": [
+   {
+    "bbs_no": 54143154,
+    "station_no": 16248678,
+    "auth_no": 101,
+    "w_auth_no": 200,
+    "display_type": 104,
+    "rnum": 6,
+    "line": 1,
+    "indention": 0,
+    "name": "공지사항",
+    "name_font": 0,
+    "main_view_yn": 0,
+    "view_type": 0
+   },
+   {
+    "bbs_no": 41962610,
+    "station_no": 16248678,
+    "auth_no": 101,
+    "w_auth_no": 200,
+    "display_type": 104,
+    "rnum": 127,
+    "line": 1,
+    "indention": 0,
+    "name": "하이라이트 게시판",
+    "name_font": 0,
+    "main_view_yn": 0,
+    "view_type": 0
+   }
+  ],
+  "upd": {
+   "station_no": 16248678,
+   "user_id": "brainzerg7",
+   "asp_code": 0,
+   "fan_cnt": 120405,
+   "today0_visit_cnt": 15995,
+   "today1_visit_cnt": 0,
+   "total_visit_cnt": 11687753,
+   "today0_ok_cnt": 683,
+   "today1_ok_cnt": 0,
+   "today0_fav_cnt": 7,
+   "today1_fav_cnt": 0,
+   "total_ok_cnt": 2194127,
+   "total_view_cnt": 186272909
+  },
+  "vods": [
+   {
+    "bbs_no": 41962609,
+    "station_no": 16248678,
+    "auth_no": 101,
+    "w_auth_no": 200,
+    "display_type": 108,
+    "rnum": 0,
+    "line": 1,
+    "indention": 0,
+    "name": "방송 다시보기",
+    "name_font": 0,
+    "main_view_yn": 0,
+    "view_type": 0
+   }
+  ],
+  "broad_start": "2026-11-25 19:13:43",
+  "grade": 0,
+  "jointime": "2015-12-07 11:42:19",
+  "station_name": "BJ김윤환",
+  "station_no": 16248678,
+  "station_title": "프로게이머 김윤환입니다 ~",
+  "total_broad_time": 77410110,
+  "user_id": "brainzerg7",
+  "user_nick": "Calm_김윤환",
+  "active_no": 0
+ },
+ "broad": null,
+ "starballoon_top": [
+  {
+   "user_id": "fesias",
+   "user_nick": "Calm우에스기",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/fe/fesias/fesias.jpg"
+  },
+  {
+   "user_id": "hjin87",
+   "user_nick": "HJ87",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/hj/hjin87/hjin87.jpg"
+  },
+  {
+   "user_id": "heins1004",
+   "user_nick": "정답은암센세",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/he/heins1004/heins1004.jpg"
+  },
+  {
+   "user_id": "protman",
+   "user_nick": "낭만버린윤환",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/pr/protman/protman.jpg"
+  },
+  {
+   "user_id": "kwamt2000",
+   "user_nick": "Calm_Mr.A",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/kw/kwamt2000/kwamt2000.jpg"
+  },
+  {
+   "user_id": "nsmy0908",
+   "user_nick": "Mstz_방철용!",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ns/nsmy0908/nsmy0908.jpg"
+  },
+  {
+   "user_id": "siu00424",
+   "user_nick": "븨의응신ㅋㅋ",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/si/siu00424/siu00424.jpg"
+  },
+  {
+   "user_id": "jake3908",
+   "user_nick": "Jake_스타",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ja/jake3908/jake3908.jpg"
+  },
+  {
+   "user_id": "eqtkb8to24",
+   "user_nick": "매너형",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/eq/eqtkb8to24/eqtkb8to24.jpg"
+  },
+  {
+   "user_id": "puc741",
+   "user_nick": "헤이즈!",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/pu/puc741/puc741.jpg"
+  },
+  {
+   "user_id": "eheocpanj123",
+   "user_nick": "Clam_김윤환",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/eh/eheocpanj123/eheocpanj123.jpg"
+  },
+  {
+   "user_id": "tkrhkd",
+   "user_nick": "샘첸",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/tk/tkrhkd/tkrhkd.jpg"
+  },
+  {
+   "user_id": "pshblue0124",
+   "user_nick": "pshblue",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ps/pshblue0124/pshblue0124.jpg"
+  },
+  {
+   "user_id": "npjjun",
+   "user_nick": "Calm_Haven",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/np/npjjun/npjjun.jpg"
+  },
+  {
+   "user_id": "kjwkuji",
+   "user_nick": "국밥완뚝",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/kj/kjwkuji/kjwkuji.jpg"
+  },
+  {
+   "user_id": "cho2by",
+   "user_nick": "Calmㅅㄱ",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ch/cho2by/cho2by.jpg"
+  },
+  {
+   "user_id": "ksb4519",
+   "user_nick": "clam_한화",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ks/ksb4519/ksb4519.jpg"
+  },
+  {
+   "user_id": "dangerman444",
+   "user_nick": "Calm_에고",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/da/dangerman444/dangerman444.jpg"
+  },
+  {
+   "user_id": "coreacod",
+   "user_nick": "암홍기",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/co/coreacod/coreacod.jpg"
+  },
+  {
+   "user_id": "flwkem89",
+   "user_nick": "꼭두각시♥",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/fl/flwkem89/flwkem89.jpg"
+  }
+ ],
+ "sticker_top": [
+  {
+   "user_id": "kmw3759",
+   "user_nick": "Rememberz",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/km/kmw3759/kmw3759.jpg"
+  },
+  {
+   "user_id": "cosmos1470",
+   "user_nick": "뮌헨빠",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/co/cosmos1470/cosmos1470.jpg"
+  },
+  {
+   "user_id": "st900310",
+   "user_nick": "Calm_고짜",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/st/st900310/st900310.jpg"
+  },
+  {
+   "user_id": "ysh4562",
+   "user_nick": "Calm_김유란",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ys/ysh4562/ysh4562.jpg"
+  },
+  {
+   "user_id": "sksky664",
+   "user_nick": "★★ZoZo★★",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/sk/sksky664/sksky664.jpg"
+  },
+  {
+   "user_id": "eqtkb8to24",
+   "user_nick": "매너형",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/eq/eqtkb8to24/eqtkb8to24.jpg"
+  },
+  {
+   "user_id": "siu00424",
+   "user_nick": "븨의응신ㅋㅋ",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/si/siu00424/siu00424.jpg"
+  },
+  {
+   "user_id": "congjo777",
+   "user_nick": "토끼띠#",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/co/congjo777/congjo777.jpg"
+  },
+  {
+   "user_id": "indeepocean",
+   "user_nick": "너잡는세스코",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/in/indeepocean/indeepocean.jpg"
+  },
+  {
+   "user_id": "lkh815555",
+   "user_nick": "갈색빛",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/lk/lkh815555/lkh815555.jpg"
+  },
+  {
+   "user_id": "gkebp123",
+   "user_nick": "떠돌이충",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/gk/gkebp123/gkebp123.jpg"
+  },
+  {
+   "user_id": "qjatn401",
+   "user_nick": "그냐",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/qj/qjatn401/qjatn401.jpg"
+  },
+  {
+   "user_id": "sjin9805",
+   "user_nick": "잉여._.",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/sj/sjin9805/sjin9805.jpg"
+  },
+  {
+   "user_id": "hypertension",
+   "user_nick": "Calm_우니",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/hy/hypertension/hypertension.jpg"
+  },
+  {
+   "user_id": "tranquildawn",
+   "user_nick": "[HYUNG]",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/tr/tranquildawn/tranquildawn.jpg"
+  },
+  {
+   "user_id": "suhoja7182",
+   "user_nick": "빻쥐",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/su/suhoja7182/suhoja7182.jpg"
+  },
+  {
+   "user_id": "havdream23",
+   "user_nick": "사하촌",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/ha/havdream23/havdream23.jpg"
+  },
+  {
+   "user_id": "smile21y",
+   "user_nick": "곶민암",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/sm/smile21y/smile21y.jpg"
+  },
+  {
+   "user_id": "zizonasia",
+   "user_nick": "흙마흙",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/zi/zizonasia/zizonasia.jpg"
+  },
+  {
+   "user_id": "wqw5443",
+   "user_nick": "훌랄라생활",
+   "profile_image": "//profile.img.sooplive.co.kr/LOGO/wq/wqw5443/wqw5443.jpg"
+  }
+ ],
+ "subscription": {
+  "total": 277,
+  "tier1": 233,
+  "tier2": 44
+ },
+ "is_best_bj": true,
+ "is_partner_bj": true,
+ "is_ppv_bj": false,
+ "is_af_supporters_bj": false,
+ "is_shopfreeca_bj": false,
+ "is_favorite": false,
+ "is_subscription": false,
+ "is_owner": false,
+ "is_manager": false,
+ "is_notice": false,
+ "is_adsence": true,
+ "is_mobile_push": false,
+ "subscribe_visible": "on",
+ "country": "KR",
+ "current_timestamp": "2026-11-25 22:07:22"
+}
