@@ -70,6 +70,8 @@ come back to it, and with `r`. `/` finds a channel by its name (or opens
 a link to it, `https://www.twitch.tv/...`, typed on any site); Enter
 shows a channel, `f` keeps it, `-` (or `f` again) lets it go.
 
+![Twitch's Home: favourites live now, then the others](screenshots/twitch.svg)
+
 **SOOP** (sooplive.co.kr) works the same way, with the past broadcasts
 (다시보기) of each channel: its Home is your SOOP favourites, those live
 first, then the past broadcasts you stopped in the middle ("Continue
@@ -81,6 +83,8 @@ where you stopped; `Q` picks another quality, `w` keeps it for later,
 `d` downloads it. Without an account, vts can't play what SOOP keeps for
 accounts: broadcasts for 19 and over, with a password, or for
 subscribers only (they say so).
+
+![A SOOP channel: its live stream, then its past broadcasts](screenshots/soop.svg)
 
 Live streams play through Streamlink,
 which comes with vts and leaves Twitch's ads out: `p` in the quality of

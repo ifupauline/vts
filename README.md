@@ -54,6 +54,7 @@ age-restricted and members-only videos.
 | --- | --- |
 | ![Home: the new videos of your favourite channels](doc/screenshots/home.svg) | ![A video page: description, chapters and what comes next](doc/screenshots/video.svg) |
 | ![Search suggestions as you type](doc/screenshots/suggestions.svg) | ![Settings: each one explained, changed in place](doc/screenshots/settings.svg) |
+| ![Twitch: your favourite channels, the live ones first](doc/screenshots/twitch.svg) | ![SOOP: a channel, live now, and its past broadcasts](doc/screenshots/soop.svg) |
 
 In the app, `?` shows the keys. The main ones:
 

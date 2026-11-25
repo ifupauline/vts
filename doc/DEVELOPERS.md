@@ -111,10 +111,13 @@ with an error or a result; a Python traceback or a hang is kept in
 `fuzz-crash-N/` with its command.
 
 `make live-test` runs `tests/live_test.py`, the one test that talks to
-the real YouTube: searches with filters and pages, a video page with
-chapters, comments and replies, a channel's tabs and its search, a
-playlist, feeds, suggestions and `vts doctor`. It checks shapes (how
-many results, which fields), not content. It fails when YouTube changed
+the real YouTube, Twitch and SOOP: searches with filters and pages, a
+video page with chapters, comments and replies, a channel's tabs and its
+search, a playlist, feeds, suggestions and `vts doctor`; Twitch's search
+and live status of big channels, with Streamlink finding the qualities
+of one live; a SOOP channel, its past broadcasts (two pages, one read by
+yt-dlp) and a live stream Streamlink finds. It checks shapes (how many
+results, which fields), not content. It fails when a site changed
 something vts reads, and exits with 3 when YouTube refuses the network
 for a while, which says nothing either way. It runs every day too.
 

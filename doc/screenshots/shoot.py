@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Make the screenshots of the README: runs vts on a pseudo terminal against
-the test server (the recorded YouTube answers, a made-up thumbnail), reads
+the test server (the recorded YouTube, Twitch and SOOP answers, made-up
+thumbnails), reads
 its screen with pyte and writes each one as an SVG picture.
 
 usage: shoot.py VTS [OUTDIR]   (OUTDIR: this folder)
@@ -178,7 +179,8 @@ def main():
            "XDG_DATA_HOME": os.path.join(work, ".local", "share"),
            "XDG_CACHE_HOME": os.path.join(work, ".cache"),
            "XDG_RUNTIME_DIR": os.path.join(work, "run"),
-           "VTS_BASE_URL": url, "VTS_IMAGE_URL": url}
+           "VTS_BASE_URL": url, "VTS_IMAGE_URL": url,
+           "VTS_TWITCH_URL": url + "/gql", "VTS_SOOP_URL": url}
     # a favourite, so Home has something
     subprocess.run([vts, "fav", "add", "-g", "Science", "@kurzgesagt"],
                    env=env, check=True, capture_output=True)
@@ -203,11 +205,38 @@ def main():
         shots.append(("video", "vts: a video page",
                       svg(t.screen, "A video page")))
         t.keys("4", "Saved in")
-        t.keys("jj", "highest quality")
-        t.pump(None, 1)
+        # down to YouTube's quality
+        for _ in range(20):
+            if "The highest quality" in t.text():
+                break
+            os.write(t.fd, b"j")
+            t.pump(None, 0.2)
+        t.pump("The highest quality")
         shots.append(("settings", "vts: the settings",
                       svg(t.screen, "Settings")))
-        t.keys("1q")
+        # Twitch: two favourites, one live
+        t.keys("1b", "No Twitch favourites yet.")
+        t.keys("/", "Find a Twitch channel")
+        t.keys("esl_sc2\r", "watching")
+        t.keys("f", "is a favourite")
+        t.keys("/", "Find a Twitch channel")
+        t.keys("comebacktv\r", "followers")
+        t.keys("f", "is a favourite")
+        t.keys("1", "Offline")
+        t.pump(None, 2)
+        shots.append(("twitch", "vts: Twitch's Home",
+                      svg(t.screen, "Twitch")))
+        # SOOP: a channel, live, and its past broadcasts
+        t.keys("b", "No SOOP favourites yet.")
+        t.keys("/", "Find a SOOP channel")
+        t.keys("김정우\r", "effort김정우")
+        t.keys("\r", "fans")
+        t.pump(None, 2)
+        shots.append(("soop", "vts: a SOOP channel",
+                      svg(t.screen, "SOOP")))
+        # Home quits
+        t.keys("1", "SOOP favourites")
+        os.write(t.fd, b"q")
         os.waitpid(t.pid, 0)
     finally:
         server.terminate()

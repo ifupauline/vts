@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """
-Checks vts against the real YouTube, to find out when YouTube changes
-something vts reads. The other tests use recorded answers and keep
-passing when YouTube moves on; this one doesn't. It needs the internet.
+Checks vts against the real YouTube, Twitch and SOOP, to find out when one
+of them changes something vts reads. The other tests use recorded answers
+and keep passing when the sites move on; this one doesn't. It needs the
+internet.
 
 usage: live_test.py VTS
 
-Each check runs a vts command and looks at the shape of what comes back
-(not at its content, which changes every day): how many results, which
-fields they have. Exit status: 0 when everything is read, 1 when
+Each check runs a vts command (for Twitch and SOOP, which have no
+commands, vts' own code from this folder) and looks at the shape of what
+comes back (not at its content, which changes every day): how many
+results, which fields they have; and whether Streamlink and yt-dlp can
+play what vts finds. Exit status: 0 when everything is read, 1 when
 something isn't (YouTube changed: see what failed, then fix the rules or
 the code and record new fixtures), 3 when YouTube refuses this network
 for a while (its automated traffic check), which says nothing either
@@ -33,6 +36,7 @@ BLOCKED = "refusing requests from this network"
 VIDEO_ID = re.compile(r"[A-Za-z0-9_-]{11}")
 CHANNEL_RE = re.compile(r"UC[A-Za-z0-9_-]{22}")
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 failures = []
 blocked = []
 
@@ -220,9 +224,91 @@ def check_doctor(vts, env):
             raise AssertionError(f"doctor: {line.strip() or what}")
 
 
+# --- Twitch and SOOP ---------------------------------------------------------
+
+# big channels: some of them are live at any hour
+TWITCH_LOGINS = ("esl_sc2 kaicenat xqc zackrawrr shroud tarik summit1g ibai "
+                 "caedrel jynxzi hasanabi lirik gaules kamet0 squeezie "
+                 "ninja").split()
+SOOP_CHANNEL = "momo130"
+SOOP_QUERIES = ("스타", "롤", "발로란트")
+
+
+def site(key):
+    sys.path.insert(0, ROOT)
+    for name in ("VTS_TWITCH_URL", "VTS_SOOP_URL"):
+        os.environ.pop(name, None)
+    from vts import sites
+    return sites, sites.get(key)
+
+
+def streams(env, url):
+    """the qualities Streamlink finds for the live stream at @url"""
+    p = subprocess.run([sys.executable, "-m", "streamlink", "--json", url],
+                       capture_output=True, text=True, timeout=90, env=env)
+    try:
+        got = json.loads(p.stdout)
+    except ValueError:
+        raise AssertionError(f"streamlink {url}: {p.stderr.strip()[:200]}")
+    if got.get("error") or not got.get("streams"):
+        raise AssertionError(f"streamlink {url}: {got.get('error')}")
+    return got["streams"]
+
+
+def check_twitch(vts, env):
+    sites, tw = site("twitch")
+    found = tw.find("esl_sc2")
+    at_least(found, 1, "channels found")
+    if found[0]["id"] != "twitch:esl_sc2":
+        raise AssertionError(f"find esl_sc2: {found[0]['id']} first")
+    has(found[0], "id", "title", "handle", "subscribers", "thumbnail")
+    st = tw.status(["twitch:" + name for name in TWITCH_LOGINS])
+    at_least(st, len(TWITCH_LOGINS) - 2, "channels with a status")
+    on = [(c, live) for c, live in st if live]
+    at_least(on, 1, "live channels")
+    c, live = on[0]
+    has(live, "id", "title", "channel", "channel_id", "views", "thumbnail")
+    got = streams(env, tw.stream_url(live))
+    if "best" not in got:
+        raise AssertionError(f"Streamlink: no best in {sorted(got)}")
+
+
+def check_soop(vts, env):
+    sites, so = site("soop")
+    c, live = so.channel("soop:" + SOOP_CHANNEL)
+    has(c, "id", "title", "subscribers", "thumbnail")
+    past = so.past(c["id"])
+    at_least(past.items, 5, "past broadcasts")
+    for v in past.items:
+        has(v, "id", "title", "duration", "views", "published", "thumbnail")
+    if not past.continuation:
+        raise AssertionError("past broadcasts: no next page")
+    more = so.past(c["id"], past.continuation)
+    at_least(more.items, 1, "past broadcasts on the next page")
+    # yt-dlp plays them
+    url = sites.page_url(past.items[0]["id"])
+    p = subprocess.run(["yt-dlp", "-J", "--no-warnings", url],
+                       capture_output=True, text=True, timeout=120, env=env)
+    if p.returncode != 0:
+        raise AssertionError(f"yt-dlp {url}: {p.stderr.strip()[:200]}")
+    if not json.loads(p.stdout).get("formats") and \
+            not json.loads(p.stdout).get("entries"):
+        raise AssertionError(f"yt-dlp {url}: no formats")
+    # someone live, found by searching
+    found = []
+    for q in SOOP_QUERIES:
+        found += so.find(q)
+    at_least(found, 10, "channels found")
+    st = so.status([f["id"] for f in found if f.kind == "channel"][:40])
+    on = [(c, live) for c, live in st if live and not live["locked"]]
+    at_least(on, 1, "live channels")
+    has(on[0][1], "id", "title", "channel", "views", "thumbnail")
+    streams(env, sites.live_url(on[0][1]["id"]))
+
+
 CHECKS = [check_search, check_filters, check_video, check_chapters,
           check_comments, check_channel, check_playlist, check_feed,
-          check_suggest, check_doctor]
+          check_suggest, check_doctor, check_twitch, check_soop]
 
 
 def main():
@@ -243,7 +329,7 @@ def main():
         try:
             check(vts, env)
             status = "ok" if len(blocked) == before else "BLOCKED"
-        except (AssertionError, subprocess.TimeoutExpired) as e:
+        except Exception as e:  # SiteError, timeouts, what changed
             failures.append((check.__name__, str(e)))
             status = "FAIL"
         print(f"{check.__name__:30} {status}", flush=True)
