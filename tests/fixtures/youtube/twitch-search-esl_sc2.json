@@ -1,0 +1,257 @@
+{
+ "data": {
+  "searchUsers": {
+   "edges": [
+    {
+     "node": {
+      "login": "esl_sc2",
+      "displayName": "ESL_SC2",
+      "description": "For standings, schedule, and results, visit https://pro.eslgaming.com/tour/sc2/",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/cac110f7-0711-421f-9341-c77b53ab63b5-profile_image-150x150.jpeg",
+      "followers": {
+       "totalCount": 392522
+      },
+      "stream": {
+       "title": "RERUN: Maru vs. herO - ESL SC2 Masters Spring 2024 Finals - Playoffs",
+       "viewersCount": 48,
+       "createdAt": "2026-11-24T04:06:40Z",
+       "type": "live",
+       "game": {
+        "displayName": "StarCraft II"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_esl_sc2-440x248.jpg"
+      }
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2b",
+      "displayName": "ESL_SC2b",
+      "description": "For standings, schedule, results and videos visit https://pro.eslgaming.com/tour/sc2/",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/85c432ee-2801-4331-ada3-d4e8db19fd30-profile_image-150x150.jpeg",
+      "followers": {
+       "totalCount": 45145
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2c",
+      "displayName": "ESL_SC2c",
+      "description": "For standings, schedule, results and videos visit https://pro.eslgaming.com/tour/sc2/",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/a29010aa-7359-421e-a12b-f67c6d1f1bdc-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 14857
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_pl",
+      "displayName": "esl_sc2_pl",
+      "description": "Oficjalny kanał ESL.TV, gdzie fani StarCraft 2 będą mogli oglądać polską relację z największych turniejów organizowanych przez naszą ligę oraz partnerów. Więcej informacji: www.esl.tv lub www.esl.eu/pl - Zapraszamy!",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/3638cc74-041b-4a65-99f0-190df07e4a1a-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 14328
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_es",
+      "displayName": "ESL_sc2_es",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/98b58dac-ca71-480c-b301-020cb6272c20-profile_image-150x150.jpeg",
+      "followers": {
+       "totalCount": 3003
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_br",
+      "displayName": "esl_sc2_br",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/user-default-pictures-uv/dbdc9198-def8-11e9-8681-784f43822e80-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 571
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_it",
+      "displayName": "esl_sc2_it",
+      "description": "Electronic Sports League - The League That Matters!",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/7c5b56ea-bf2a-4e0f-a439-b65f5cc77bb3-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 698
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_fr",
+      "displayName": "esl_sc2_fr",
+      "description": "Bienvenue sur la chaîne officielle Starcraft 2 de l'ESL TV France !",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_fr-profile_image-3448461bedbe7d28-150x150.jpeg",
+      "followers": {
+       "totalCount": 680
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_kr",
+      "displayName": "ESL_SC2_KR",
+      "description": "",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_kr-profile_image-b16db32ac17a4edf-150x150.png",
+      "followers": {
+       "totalCount": 585
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_czsk",
+      "displayName": "esl_sc2_czsk",
+      "description": "ESL TV CZ&SK - StarCraft II Channel",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_czsk-profile_image-5cbf7163356024a9-150x150.jpeg",
+      "followers": {
+       "totalCount": 333
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2ki",
+      "displayName": "esl_sc2ki",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 152
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2t",
+      "displayName": "esl_sc2t",
+      "description": "I'm Amanda",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/1e738655-2675-473b-96a0-2ccb977c85c5-profile_image-150x150.jpg",
+      "followers": {
+       "totalCount": 144
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_no",
+      "displayName": "esl_sc2_no",
+      "description": "Twitch kanal dedikert til Norsk dekning av Starcraft 2 eventer arrangert av ESL.",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_no-profile_image-ea87f6a5ddfbb247-150x150.png",
+      "followers": {
+       "totalCount": 115
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc22",
+      "displayName": "esl_sc22",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/user-default-pictures-uv/dbdc9198-def8-11e9-8681-784f43822e80-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 91
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2d",
+      "displayName": "esl_sc2d",
+      "description": "Hello I am a gamer",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/16071b70-4aa6-4eb6-ab1b-b1bbba7ee26f-profile_image-150x150.jpg",
+      "followers": {
+       "totalCount": 48
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc24",
+      "displayName": "esl_sc24",
+      "description": "When I'm not playing fingerstyle guitar",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/eb3d30bd-560c-489c-960a-5618d5720063-profile_image-150x150.jpg",
+      "followers": {
+       "totalCount": 49
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_tr",
+      "displayName": "esl_sc2_tr",
+      "description": "",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_tr-profile_image-0cd2ad4dbc9984f9-150x150.png",
+      "followers": {
+       "totalCount": 43
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_in",
+      "displayName": "esl_sc2_in",
+      "description": "Welcome to Indian e-Sports Live Stream & Hindi ShoutCasting brought to you by LordNOD , part of LordNOD - India's Premier Gaming Media. We do:1. Games (Starcraft 2, LOL, DOTA2, CS-GO, Battlefield3, Diablo 3, FIFA, Super Street fighter 4) 2. Live event coverage 3. Interviews with Indian gamers",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_in-profile_image-8c89957ee17a3034-150x150.png",
+      "followers": {
+       "totalCount": 25
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2_swe",
+      "displayName": "esl_sc2_swe",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/esl_sc2_swe-profile_image-01450a8258d432dd-150x150.png",
+      "followers": {
+       "totalCount": 23
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "esl_sc2a",
+      "displayName": "esl_sc2a",
+      "description": null,
+      "profileImageURL": "https://static-cdn.jtvnw.net/user-default-pictures-uv/ead5c8b2-a4c9-4724-b1dd-9f00b46cbd3d-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 13
+      },
+      "stream": null
+     }
+    }
+   ]
+  }
+ }
+}

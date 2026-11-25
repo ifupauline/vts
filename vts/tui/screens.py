@@ -133,29 +133,71 @@ def home(app):
 
 
 class SiteHome(Screen):
-    """Twitch's and SOOP's Home: their favourite channels"""
-    hints = "b next site  / find a channel  ? help  q quit"
+    """
+    Twitch's and SOOP's Home: their favourite channels, those live now
+    first (with their streams), the others greyed
+    """
+    hints = ("Enter play  Q quality  a sound  d record  - remove  / find  "
+             "b next site  r again")
 
     def __init__(self, site):
         super().__init__("Home")
         self.site = site
+        self.failed = False
 
     def load(self, app):
         self.items = []
         self.labels = {}
+        self.failed = False
         try:
-            for f in app.lib.favs(self.site):
-                self.items.append(Item("channel", id=f.id, title=f.name,
-                                       handle=f.handle))
+            favs = app.lib.favs(self.site)
         except LibError as e:
             app.failed(e)
-        if self.items:
-            self.labels[0] = "Your favourites"
+            favs = []
         # an empty Home says why in its header, not "Nothing here"
-        self.done = bool(self.items)
+        self.done = bool(favs)
+        if not favs:
+            return
+        name = sites.NAMES[self.site]
+        app.busy(f"Who is live on {name}...")
+        try:
+            got = sites.get(self.site).status([f.id for f in favs])
+        except sites.SiteError as e:
+            app.failed(e)
+            self.failed = True
+            got = []
+        live = sorted(((c, s) for c, s in got if s),
+                      key=lambda cs: -_viewers(cs[1]))
+        offline = [c for c, s in got if not s]
+        known = {c["id"] for c, _ in got}
+        for f in favs:
+            if f.id not in known:
+                # gone from the site, or it couldn't be asked
+                offline.append(Item("channel", id=f.id, title=f.name,
+                                    handle=f.handle))
+        for c in offline:
+            c.f["offline"] = True
+        if live:
+            self.labels[0] = "Live now"
+        self.items = [s for _, s in live]
+        if offline:
+            self.labels[len(self.items)] = (
+                "Offline" if not self.failed else
+                f"Your favourites ({name} didn't answer)")
+            self.items += offline
 
     def reload(self, app):
         self.load(app)
+
+    def key(self, app, key):
+        it = self.selected()
+        if key in ("-", "DELETE", "f") and it is not None:
+            ident = it["id"] if it.kind == "channel" else it["channel_id"]
+            app.favourite(ident, it["channel"] or it["title"])
+            self.load(app)
+            self.sel = min(self.sel, max(0, len(self.items) - 1))
+            return True
+        return False
 
     def header(self, app, y):
         if self.items:
@@ -163,11 +205,104 @@ class SiteHome(Screen):
         name = sites.NAMES[self.site]
         D.text(y + 1, 2, f"No {name} favourites yet.", app.cols - 4,
                curses.A_BOLD)
-        D.text(y + 3, 2, f"Finding {name} channels comes with the next "
-               "update of vts; then / finds one and f keeps it.",
-               app.cols - 4)
+        D.text(y + 3, 2, f"/ finds a {name} channel by its name (or a "
+               "link to it), and f keeps it.", app.cols - 4)
         D.text(y + 4, 2, "b goes to the next site.", app.cols - 4)
         return y + 6
+
+
+def _viewers(it):
+    digits = "".join(c for c in it["views"] or "" if c.isdigit())
+    return int(digits) if digits else 0
+
+
+class SiteSearch(Screen):
+    """the channels of Twitch or SOOP whose name is like what was typed"""
+    hints = "Enter open  p play  f favourite  b next site  ? help"
+
+    def __init__(self, site, query):
+        super().__init__(f"Find: {query}")
+        self.site = site
+        self.query = query
+        self.done = True
+
+    def reload(self, app):
+        app.busy(f"Looking for {self.query} on {sites.NAMES[self.site]}...")
+        try:
+            self.items = sites.get(self.site).find(self.query)
+        except sites.SiteError as e:
+            app.failed(e)
+            self.items = []
+
+    def header(self, app, y):
+        if self.items:
+            return y
+        D.text(y + 1, 2, f"No {sites.NAMES[self.site]} channel found for "
+               f"{self.query}.", app.cols - 4, curses.A_BOLD)
+        D.text(y + 2, 2, "Its exact name, or a link to it, finds it.",
+               app.cols - 4)
+        return y + 4
+
+
+def site_search(app, site, query):
+    s = SiteSearch(site, query)
+    s.reload(app)
+    return s
+
+
+class SiteChannel(Screen):
+    """a Twitch or SOOP channel: what it is, its live stream if it's on"""
+    hints = "Enter play  Q quality  d record  f favourite  ? help"
+
+    def __init__(self, ident):
+        super().__init__(sites.split(ident)[2])
+        self.ident = ident
+        self.channel = None
+        self.done = True
+
+    def reload(self, app):
+        site = sites.site_of(self.ident)
+        app.busy(f"Asking {sites.NAMES[site]}...")
+        try:
+            self.channel, live = sites.get(site).channel(self.ident)
+        except sites.SiteError as e:
+            app.failed(e)
+            return False
+        self.title = self.channel["title"]
+        self.items = [live] if live else []
+        if live:
+            self.labels = {0: "Live now"}
+        return True
+
+    def key(self, app, key):
+        if key == "f" and self.channel:
+            app.favourite(self.channel["id"], self.channel["title"],
+                          self.channel["handle"])
+            return True
+        return False
+
+    def header(self, app, y):
+        c = self.channel
+        if not c:
+            return y
+        D.text(y, 1, c["title"], app.cols - 2, curses.A_BOLD)
+        fav = "★ favourite" if app.lib.fav(c["id"]) else None
+        D.text(y + 1, 1, " · ".join(x for x in (
+            c["handle"], c["subscribers"], fav) if x), app.cols - 2,
+            D.pair(D.C_DIM))
+        y += 2
+        if c["description"]:
+            y += D.wrapped(y, 1, c["description"], app.cols - 2, 3)
+        if not self.items:
+            D.text(y + 1, 1, "Not live right now.", app.cols - 2,
+                   curses.A_BOLD)
+            y += 2
+        return y + 1
+
+
+def site_channel(app, ident):
+    s = SiteChannel(ident)
+    return s if s.reload(app) else None
 
 
 def site_home(app, site):

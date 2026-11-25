@@ -44,7 +44,7 @@ packages = ["vts", "vts.cli", "vts.sites", "vts.tui"]
 version = { attr = "vts.__version__" }
 
 [tool.setuptools.package-data]
-vts = ["youtube.json"]
+vts = ["youtube.json", "twitch.json"]
 
 [tool.ruff]
 line-length = 79

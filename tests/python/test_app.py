@@ -122,6 +122,67 @@ def test_start_site(app):
     assert t.wait(lambda: "No Twitch favourites yet." in t.text()), t.text()
 
 
+def streamlink_runs(log):
+    if not log.exists():
+        return []
+    with open(log) as f:
+        return [e["streamlink"] for e in map(json.loads, f)
+                if "streamlink" in e]
+
+
+def test_twitch(app):
+    t = app()
+    t.keys("b", "No Twitch favourites yet.")
+    # finding a channel by its name: the one named so first, live
+    t.keys("/", "Find a Twitch channel")
+    assert t.keys("esl_sc2\r", "Find: esl_sc2"), t.text()
+    assert t.wait(lambda: t.line(1).startswith("▌ LIVE  ESL_SC2")), t.text()
+    assert "StarCraft II" in t.line(2) and "watching" in t.line(2), t.line(2)
+    assert t.keys("f", "ESL_SC2 is a favourite, on Twitch's Home"), t.text()
+    # a link opens its channel, from any site
+    t.keys("b", "No SOOP favourites yet.")
+    t.keys("/")
+    t.keys("https://www.twitch.tv/comebacktv\r", None, 0.5)
+    assert t.wait(lambda: "comebacktv · 27,541 followers" in t.text()), \
+        t.text()
+    assert "Twitch" in t.line(0) and "ComeBackTV" in t.line(0), t.line(0)
+    t.keys("f", "ComeBackTV is a favourite")
+    # Home: live ones first, the others greyed
+    t.keys("1", "Live now")
+    assert t.wait(lambda: "Offline" in t.text()), t.text()
+    lines = t.text().split("\n")
+    live = next(i for i, ln in enumerate(lines) if "Live now" in ln)
+    off = next(i for i, ln in enumerate(lines) if ln.strip() == "Offline")
+    assert "LIVE" in lines[live + 1] and "619 watching" in lines[live + 2]
+    assert "ESL_SC2" in lines[off + 1] and "offline" in lines[off + 2]
+    assert t.screen.buffer[off + 1][3].fg != t.screen.buffer[live + 1][9].fg \
+        or not t.screen.buffer[off + 1][3].bold
+    # p plays it through Streamlink, in twitch.quality (best)
+    t.keys("p", "Playing live, best")
+    assert t.wait(lambda: streamlink_runs(app.log)), t.text()
+    run = streamlink_runs(app.log)[-1]
+    assert run[-2:] == ["https://www.twitch.tv/comebacktv", "best"], run
+    assert t.wait(lambda: "/live " in t.line(0)), t.line(0)
+    t.keys("x", "Stopped")
+    # Q: another quality
+    t.keys("Q", "Play in which quality?")
+    t.keys("jj\r", "Playing live, 720p")
+    assert t.wait(lambda: streamlink_runs(app.log)[-1][-1].startswith(
+        "720p60,720p,720p30,480p60")), streamlink_runs(app.log)[-1]
+    t.keys("x", "Stopped")
+    # d records it
+    t.keys("d", "Record in which quality?")
+    t.keys("\r", "Recording")
+    assert t.wait(lambda: "● rec" in t.line(0)), t.line(0)
+    assert t.wait(lambda: "--output" in streamlink_runs(app.log)[-1])
+    assert streamlink_runs(app.log)[-1][-2] == \
+        "https://www.twitch.tv/comebacktv"
+    # - removes a favourite (after asking)
+    t.keys("G-", "Remove ESL_SC2 from favourites?")
+    assert t.keys("j\r", "Removed ESL_SC2"), t.text()
+    assert t.wait(lambda: "Offline" not in t.text()), t.text()
+
+
 def test_recent_searches(app):
     t = app()
     t.keys("/")

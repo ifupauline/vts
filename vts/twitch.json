@@ -1,0 +1,11 @@
+{
+  "about": "How vts asks Twitch for channels and their live streams (Twitch's public GraphQL interface, as its website does). Updated with youtube.json: bump revision (YYYYMMDDNN) when changing it.",
+  "revision": 2026112501,
+  "url": "https://gql.twitch.tv/gql",
+  "client_id": "kimne78kx3ncx6brgo4mv6wki5h1ko",
+  "queries": {
+    "users": "query($logins:[String!]){users(logins:$logins){login displayName description profileImageURL(width:150) followers{totalCount} stream{title viewersCount createdAt type game{displayName} previewImageURL(width:440,height:248)}}}",
+    "search": "query($query:String!){searchUsers(userQuery:$query,first:20){edges{node{login displayName description profileImageURL(width:150) followers{totalCount} stream{title viewersCount createdAt type game{displayName} previewImageURL(width:440,height:248)}}}}}"
+  },
+  "max_logins": 100
+}

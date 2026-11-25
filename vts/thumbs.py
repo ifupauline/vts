@@ -17,8 +17,10 @@ import io
 import os
 import subprocess
 import threading
+import time
+import urllib.parse
 
-from vts import http, log, platform
+from vts import http, log, platform, sites
 from vts.rules import valid_video_id
 
 DEFAULT_IMAGE_BASE = "https://i.ytimg.com"
@@ -46,8 +48,32 @@ class Thumb:
         self.lines = lines  # blocks: one line of text per row
 
 
+# where Twitch's and SOOP's pictures come from
+_SITE_HOSTS = (".jtvnw.net", ".sooplive.co.kr", ".sooplive.com",
+               ".afreecatv.com")
+LIVE_FRESH = 600  # a live stream's preview is fetched again after this
+
+
+def site_picture(url):
+    """@url if it is a picture of Twitch or SOOP (https), else None"""
+    if not isinstance(url, str) or not url.startswith("https://"):
+        return None
+    host = (urllib.parse.urlsplit(url).hostname or "").lower()
+    test = os.environ.get("VTS_IMAGE_URL", "")
+    if test and url.startswith(test + "/"):
+        return url
+    return url if host.endswith(_SITE_HOSTS) else None
+
+
 def thumb_id(it):
     """the video whose thumbnail stands for @it (a video, Short, playlist)"""
+    if sites.site_of(it["id"]) != "youtube":
+        # Twitch's and SOOP's: their own picture, by their id
+        if site_picture(it["thumbnail"]) and (
+                sites.valid_video_id(it["id"]) or
+                sites.valid_channel_id(it["id"])):
+            return it["id"]
+        return None
     if it.kind in ("video", "short"):
         return it["id"] if valid_video_id(it["id"]) else None
     if it.kind == "playlist":
@@ -314,6 +340,7 @@ class Thumbs:
         self._done = []
         self._failed = set()
         self._rendered = {}  # (id, cols, rows, cell) -> Thumb
+        self._urls = {}  # Twitch's and SOOP's: id -> their picture's address
         self._order = []
 
     def close(self):
@@ -323,18 +350,20 @@ class Thumbs:
         return bool(self._pending)
 
     def _path(self, ident):
-        return os.path.join(self.dir, f"{ident}.jpg")
+        # no ":" in a file name (Windows)
+        return os.path.join(self.dir, f"{ident.replace(':', '_')}.jpg")
 
     def _download(self, ident):
-        r = http.fetch(http.Request(f"{self.base}/vi/{ident}/mqdefault.jpg",
-                                    max_size=MAX_FILE))
+        url = self._urls.get(ident) or f"{self.base}/vi/{ident}/mqdefault.jpg"
+        r = http.fetch(http.Request(url, max_size=MAX_FILE))
         why = None
         if r.error:
             why = r.message
         elif r.status != 200:
             why = "not found"
-        elif not r.body.startswith(b"\xff\xd8") or len(r.body) <= 4:
-            why = "not a JPEG image"
+        elif (not r.body.startswith((b"\xff\xd8", b"\x89PNG")) or
+              len(r.body) <= 4):
+            why = "not a JPEG or PNG image"
         if not why:
             try:
                 platform.write_atomic(self._path(ident), r.body)
@@ -354,15 +383,27 @@ class Thumbs:
                 self._failed.add(ident)
         return len(done)
 
-    def get(self, ident, cols, rows):
+    def get(self, ident, cols, rows, url=None):
         """
         the thumbnail of @ident fitted in @cols x @rows cells: a Thumb,
-        None while it is being downloaded, False if there is none
+        None while it is being downloaded, False if there is none (@url:
+        where a Twitch or SOOP picture is)
         """
-        if not valid_video_id(ident) or cols < 1 or rows < 1:
+        if cols < 1 or rows < 1:
+            return False
+        fresh = 0
+        if sites.site_of(ident) != "youtube":
+            if not site_picture(url):
+                return False
+            self._urls[ident] = url
+            if sites.is_live(ident):
+                # a live stream's preview changes: again now and then
+                fresh = int(time.time() // LIVE_FRESH)
+                self._fresh(ident)
+        elif not valid_video_id(ident):
             return False
         cw, ch = cell_size()
-        key = (ident, cols, rows, cw, ch)
+        key = (ident, cols, rows, cw, ch, fresh)
         t = self._rendered.get(key)
         if t:
             return t
@@ -395,6 +436,20 @@ class Thumbs:
         if len(self._order) > MAX_RENDERED:
             self._rendered.pop(self._order.pop(0), None)
         return t
+
+    def _fresh(self, ident):
+        """a live stream's preview older than LIVE_FRESH: fetched again"""
+        try:
+            old = time.time() - os.path.getmtime(self._path(ident)) > \
+                LIVE_FRESH
+        except OSError:
+            return
+        if old and ident not in self._pending:
+            try:
+                os.unlink(self._path(ident))
+            except OSError:
+                pass
+            self._failed.discard(ident)
 
     def _render(self, data, path, cols, rows, cw, ch):
         from PIL import Image

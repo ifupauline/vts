@@ -65,6 +65,9 @@ def fixture_for(endpoint, body):
     with open(os.path.join(fixtures, "index.json")) as f:
         index = json.load(f)
     hl = req.get("context", {}).get("client", {}).get("hl")
+    if endpoint == "twitch":
+        # Twitch's GraphQL: matched on the query's variables
+        req = req.get("variables") or {}
     for e in index["requests"]:
         if e["endpoint"] != endpoint:
             continue
@@ -124,6 +127,16 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 self.send(404, json.dumps({"error": {
                     "code": 404, "message": "no fixture for this request"}}))
+        elif fixtures and self.command == "POST" and url.path == "/gql":
+            with lock:
+                last_request = body
+                posts += 1
+            e = fixture_for("twitch", body)
+            if e:
+                self.send(e.get("status", 200), read_fixture(e["file"]),
+                          [("Content-Type", "application/json")])
+            else:
+                self.send(200, json.dumps({"data": {"users": []}}))
         elif fixtures and url.path == "/" and self.command == "GET":
             self.send(200, read_fixture("home.html"),
                       [("Content-Type", "text/html")])

@@ -56,6 +56,20 @@ def read_key(timeout):
     return _CHARS.get(k, k)
 
 
+def as_live(it):
+    """a Twitch or SOOP channel that is live: its live stream; else @it"""
+    if it.kind != "channel" or "live" not in it.f:
+        return it
+    site, what, name = sites.split(it["id"])
+    if site == "youtube" or what:
+        return it
+    from vts.rules import Item
+    return Item("video", id=sites.live_id(site, name),
+                title=it["stream_title"] or it["title"], channel=it["title"],
+                channel_id=it["id"], views=it["views"], game=it["game"],
+                thumbnail=it["stream_thumbnail"], live=True)
+
+
 def live_label(q):
     """ "best", "720p", "sound only" """
     return {"best": "best", "audio": "sound only"}.get(q, f"{q}p")
@@ -186,6 +200,9 @@ class App:
         self.stack = self.stacks.get(site) or []
         if not self.stack:
             self.root(self.home_of(site))
+        elif site != "youtube" and len(self.stack) == 1:
+            # who is live now, not when it was left
+            self.stack[0].reload(self)
         save_last_site(site)
 
     def next_site(self):
@@ -262,8 +279,13 @@ class App:
         if self.player:
             _, pos, length = self.player.now()
             mark = "❚❚" if self.player.paused else "▶"
-            right += (f"{mark} {util.format_time(max(0, pos))}/"
-                      f"{util.format_time(length) if length else '--'} "
+            cur = self.player.current()
+            if cur is not None and sites.is_live(cur["id"]):
+                # a live stream has no length: how long it was watched
+                length_s = "live"
+            else:
+                length_s = util.format_time(length) if length else "--"
+            right += (f"{mark} {util.format_time(max(0, pos))}/{length_s} "
                       f"{self.playing or ''} ")
         w = min(T.width(right), max(0, D.cols() - x) // 2)
         D.text(0, x, left, D.cols() - x - w - 1,
@@ -312,6 +334,13 @@ class App:
         """
         def parts(*ss):
             return " · ".join(s for s in ss if s)
+        other = sites.site_of(it["id"]) != "youtube"
+        if it.kind == "channel" and other:
+            if "live" in it.f:
+                return parts(None if badge else "LIVE", it["game"],
+                             it["views"])
+            return parts(it["handle"], it["subscribers"], "offline"
+                         if "offline" in it.f else None)
         if it.kind == "channel":
             return parts("channel", it["handle"], it["subscribers"])
         if it.kind == "playlist":
@@ -326,11 +355,14 @@ class App:
         if badge and self.badge(it):
             length = None
         return parts("Short" if it.kind == "short" else None, length,
-                     it["channel"], it["views"], when, self.mark(it))
+                     it["channel"], it["game"], it["views"], when,
+                     self.mark(it))
 
     def entry_draw(self, s, i, y, rows, selected):
         it = s.items[i]
         attr = curses.A_REVERSE | curses.A_BOLD if selected else curses.A_BOLD
+        if "offline" in it.f:
+            attr = curses.A_REVERSE if selected else curses.A_DIM
         D.put(y, 0, "▌" if selected else " ")
         b = self.draw_badge(y, 1, it, self.cols - 2, selected)
         D.text(y, 1 + b, it.get("title"), self.cols - 2 - b, attr)
@@ -451,7 +483,8 @@ class App:
         # the room of a 16:9 picture
         rows = min((cols * 9 * cw) // (16 * ch), D.lines() // 2)
         ident = thumbs.thumb_id(it)
-        got = self.thumbs.get(ident, cols, rows) if ident else False
+        got = self.thumbs.get(ident, cols, rows, it["thumbnail"]) \
+            if ident else False
         if got:
             want = Shown(ident, y, x + (cols - got.cols) // 2, got)
             y += got.rows + 1
@@ -737,6 +770,13 @@ class App:
         from vts.tui import screens as S
         if not it:
             return
+        site = sites.site_of(it["id"])
+        if site != "youtube":
+            if it.kind == "channel":
+                self.push(S.site_channel(self, it["id"]))
+            elif sites.is_live(it["id"]):
+                self.play_live(it)
+            return
         if it.kind == "channel":
             self.push(S.channel(self, it["id"]))
         elif it.kind == "playlist":
@@ -754,6 +794,18 @@ class App:
         from vts.tui import screens as S
         q = q.strip()
         if not q or any(c.isspace() for c in q):
+            return False
+        # a Twitch or SOOP link: its channel, on its site
+        for site in sites.SITES[1:]:
+            try:
+                ident = sites.get(site).link(q)
+            except KeyError:
+                continue
+            if ident:
+                self.go_site(site)
+                self.push(S.site_channel(self, ident))
+                return True
+        if self.site != "youtube":
             return False
         link = "/" in q or "youtu" in q
         if link and video_mod.ref(q):
@@ -868,6 +920,7 @@ class App:
                  "Downloads stops it")
 
     def play_choose(self, it):
+        it = as_live(it) if it else it
         if not it or it.kind not in ("video", "short"):
             self.say("only videos can be played", True)
             return
@@ -971,6 +1024,8 @@ class App:
         self.play_with(items, quality, sound=sound)
 
     def play_with(self, items, quality, start=-1, sound=None):
+        # a Twitch or SOOP channel that is live: its stream
+        items = [as_live(it) for it in items[:1]] + list(items[1:])
         # only videos and Shorts: a queue skips the rest
         videos = [it for it in items if it.kind in ("video", "short")]
         if not videos:
@@ -1091,6 +1146,7 @@ class App:
 
     def download(self, it):
         """the video in a quality, or the sound, chosen from a menu"""
+        it = as_live(it) if it else it
         if not it or it.kind not in ("video", "short"):
             self.say("only videos can be downloaded", True)
             return
@@ -1186,7 +1242,9 @@ class App:
         ident = it["id"] if it else None
         if not ident:
             return
-        if it.kind == "channel":
+        if sites.site_of(ident) != "youtube":
+            url = sites.page_url(ident)
+        elif it.kind == "channel":
             url = f"https://www.youtube.com/channel/{ident}"
         elif it.kind == "playlist":
             url = f"https://www.youtube.com/playlist?list={ident}"
@@ -1238,9 +1296,10 @@ class App:
                 self.failed(e)
 
     def favourite(self, channel_id, name, handle=None):
-        if not valid_channel_id(channel_id):
+        if not sites.valid_channel_id(channel_id):
             self.say("no channel to keep", True)
             return
+        site = sites.site_of(channel_id)
         fav = self.lib.fav(channel_id)
         if fav:
             if self.confirm(f"Remove {fav.name} from favourites?"):
@@ -1253,7 +1312,9 @@ class App:
         try:
             self.lib.fav_add(channel_id, name or channel_id, handle)
             self.say(f"{name or channel_id} is a favourite: its new videos "
-                     "will be on Home")
+                     "will be on Home" if site == "youtube" else
+                     f"{name or channel_id} is a favourite, on "
+                     f"{sites.NAMES[site]}'s Home")
         except LibError as e:
             self.failed(e)
 
@@ -1283,7 +1344,9 @@ class App:
             if it:
                 self.play([it])
         elif key == "a":
-            if it:
+            if it and sites.is_live(as_live(it)["id"]):
+                self.play_live(as_live(it), "audio")
+            elif it:
                 self.play([it], config.QUALITY_AUDIO)
         elif key == "Q":
             self.play_choose(it)
@@ -1303,10 +1366,13 @@ class App:
         elif key == "y":
             self.copy_link(it)
         elif key == "c":
+            from vts.tui import screens as S
             if it and it.kind != "channel" and valid_channel_id(
                     it["channel_id"]):
-                from vts.tui import screens as S
                 self.push(S.channel(self, it["channel_id"]))
+            elif it and it.kind != "channel" and sites.valid_channel_id(
+                    it["channel_id"]):
+                self.push(S.site_channel(self, it["channel_id"]))
         elif key == "f":
             if it and it.kind == "channel":
                 self.favourite(it["id"], it["title"], it["handle"])
@@ -1378,14 +1444,19 @@ class App:
         elif key == "4":
             self.root(S.settings(self))
         elif key in ("/", "s"):
-            q = self.prompt("Search", suggest=True, recent=True)
+            yt = self.site == "youtube"
+            q = self.prompt("Search" if yt else
+                            f"Find a {sites.NAMES[self.site]} channel (its "
+                            "name, or a link)", suggest=yt, recent=yt)
             if q:
-                try:
-                    self.lib.search_add(q)
-                except LibError:
-                    pass
+                if yt:
+                    try:
+                        self.lib.search_add(q)
+                    except LibError:
+                        pass
                 if not self.open_link(q):
-                    self.push(S.search(self, q))
+                    self.push(S.search(self, q) if yt else
+                              S.site_search(self, self.site, q))
         elif key == "r":
             s.sel = s.top = 0
             s.reload(self)

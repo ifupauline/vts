@@ -61,8 +61,17 @@ keys; `q` goes back, and quits from one of the four sections:
 The top bar names three sites: YouTube, Twitch and SOOP. `b` goes to the
 next one, in its own colours (YouTube red, Twitch purple, SOOP blue),
 back where you left it; the `start_site` setting says which one vts
-opens on. Twitch and SOOP are on their way: for now their Home only
-lists their favourites. Their live streams play through Streamlink,
+opens on.
+
+**Twitch** is for its live streams. Its Home is your Twitch favourites:
+those live now first (with their title, game, viewers and how long they
+have been on), the others below, greyed; it asks again each time you
+come back to it, and with `r`. `/` finds a channel by its name (or opens
+a link to it, `https://www.twitch.tv/...`, typed on any site); Enter
+shows a channel, `f` keeps it, `-` (or `f` again) lets it go. **SOOP**
+is on its way: for now its Home only lists its favourites.
+
+Live streams play through Streamlink,
 which comes with vts and leaves Twitch's ads out: `p` in the quality of
 the `twitch.quality` or `soop.quality` setting, `Q` in one you choose
 (or the sound only), `V` changes it while it plays, and `d` records it

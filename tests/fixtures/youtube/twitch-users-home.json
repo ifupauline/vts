@@ -1,0 +1,35 @@
+{
+ "data": {
+  "users": [
+   {
+    "login": "comebacktv",
+    "displayName": "ComeBackTV",
+    "description": "Bienvenue sur la ComeBack TV ! Le projet de Koka, Funka et TKL: ici on suit tous les majors de Starcraft II, on fait des marathons pas raisonnables et on a la meilleure communauté du Twitch francophone. Viens ! On est bien !",
+    "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/2aca259d-9344-41ff-aac8-03a9b955626e-profile_image-150x150.png",
+    "followers": {
+     "totalCount": 27541
+    },
+    "stream": {
+     "title": "[FR] Kung Fu Cup 2026 Grand Finals - Clem vs herO | !eneba",
+     "viewersCount": 619,
+     "createdAt": "2026-11-25T11:00:33Z",
+     "type": "live",
+     "game": {
+      "displayName": "StarCraft II"
+     },
+     "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_comebacktv-440x248.jpg"
+    }
+   },
+   {
+    "login": "esl_sc2",
+    "displayName": "ESL_SC2",
+    "description": "For standings, schedule, and results, visit https://pro.eslgaming.com/tour/sc2/",
+    "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/cac110f7-0711-421f-9341-c77b53ab63b5-profile_image-150x150.jpeg",
+    "followers": {
+     "totalCount": 392522
+    },
+    "stream": null
+   }
+  ]
+ }
+}

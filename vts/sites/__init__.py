@@ -115,6 +115,13 @@ class Site:
         """{channel id: its live stream as an Item} for those live now"""
         raise NotImplementedError
 
+    def status(self, idents):
+        """
+        [(channel Item, its live stream Item or None)] for the channels
+        @idents that exist, in that order
+        """
+        raise NotImplementedError
+
     def past(self, ident, page=1):
         """a page of the past broadcasts of @ident (rules.Page)"""
         return rules.Page()
@@ -132,9 +139,18 @@ class SiteError(Exception):
     """a site couldn't be reached, or doesn't know what was asked"""
 
 
-def get(key, cfg=None):
+_made = {}
+
+
+def get(key):
     """the Site for @key (twitch or soop), made when first asked"""
-    raise KeyError(key)
+    if key not in _made:
+        if key == "twitch":
+            from vts.sites.twitch import Twitch
+            _made[key] = Twitch()
+        else:
+            raise KeyError(key)
+    return _made[key]
 
 
 # --- live streams: where they are, the qualities Streamlink names ---------
@@ -157,6 +173,18 @@ def live_url(ident):
     if site == "twitch":
         return f"https://www.twitch.tv/{name}"
     return f"https://play.sooplive.co.kr/{name}"
+
+
+def page_url(ident):
+    """the web page of a Twitch or SOOP channel, stream or broadcast"""
+    site, what, name = split(ident)
+    if site == "twitch":
+        return f"https://www.twitch.tv/{name}"
+    if what == "live":
+        return f"https://play.sooplive.co.kr/{name}"
+    if what == "vod":
+        return f"https://vod.sooplive.co.kr/player/{name}"
+    return f"https://www.sooplive.co.kr/station/{name}"
 
 
 def is_live(ident):

@@ -202,6 +202,41 @@
         "hl": "en"
       },
       "file": "search-live.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "query": "esl_sc2"
+      },
+      "file": "twitch-search-esl_sc2.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "logins": [
+          "esl_sc2"
+        ]
+      },
+      "file": "twitch-users-esl_sc2.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "logins": [
+          "comebacktv"
+        ]
+      },
+      "file": "twitch-users-comebacktv.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "logins": [
+          "comebacktv",
+          "esl_sc2"
+        ]
+      },
+      "file": "twitch-users-home.json"
     }
   ]
 }

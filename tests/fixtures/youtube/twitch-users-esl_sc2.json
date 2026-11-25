@@ -1,0 +1,25 @@
+{
+ "data": {
+  "users": [
+   {
+    "login": "esl_sc2",
+    "displayName": "ESL_SC2",
+    "description": "For standings, schedule, and results, visit https://pro.eslgaming.com/tour/sc2/",
+    "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/cac110f7-0711-421f-9341-c77b53ab63b5-profile_image-150x150.jpeg",
+    "followers": {
+     "totalCount": 392522
+    },
+    "stream": {
+     "title": "RERUN: Maru vs. herO - ESL SC2 Masters Spring 2024 Finals - Playoffs",
+     "viewersCount": 48,
+     "createdAt": "2026-11-24T04:06:40Z",
+     "type": "live",
+     "game": {
+      "displayName": "StarCraft II"
+     },
+     "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_esl_sc2-440x248.jpg"
+    }
+   }
+  ]
+ }
+}

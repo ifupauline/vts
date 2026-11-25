@@ -65,6 +65,9 @@ def env(tmp_path, youtube):
         "LANG": "en_US.UTF-8",
         "VTS_BASE_URL": youtube.url,
         "VTS_IMAGE_URL": youtube.url,
+        # Twitch's answers from the same server, a fake Streamlink
+        "VTS_TWITCH_URL": youtube.url + "/gql",
+        "VTS_STREAMLINK": os.path.join(TESTS, "fake_streamlink.py"),
         "PYTHONPATH": ROOT,
         "PYTHONIOENCODING": "utf-8",
     }
