@@ -62,7 +62,12 @@ The top bar names three sites: YouTube, Twitch and SOOP. `b` goes to the
 next one, in its own colours (YouTube red, Twitch purple, SOOP blue),
 back where you left it; the `start_site` setting says which one vts
 opens on. Twitch and SOOP are on their way: for now their Home only
-lists their favourites.
+lists their favourites. Their live streams play through Streamlink,
+which comes with vts and leaves Twitch's ads out: `p` in the quality of
+the `twitch.quality` or `soop.quality` setting, `Q` in one you choose
+(or the sound only), `V` changes it while it plays, and `d` records it
+into your downloads folder until you stop it (`-` on it in Library's
+Downloads) or the stream ends.
 
 `/` searches, from anywhere: your recent searches come first (Delete
 forgets one), then as you type, suggestions come as on the website

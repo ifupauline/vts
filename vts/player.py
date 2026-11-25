@@ -14,10 +14,11 @@ import os
 import queue
 import re
 import subprocess
+import sys
 import threading
 import time
 
-from vts import log, platform
+from vts import log, platform, sites
 from vts.config import QUALITY_AUDIO, QUALITY_BEST, SOUND_QUALITIES
 from vts.rules import Item, valid_video_id
 from vts.text import clean
@@ -104,6 +105,8 @@ class PlayOptions:
         self.ytdl = cfg.downloader if cfg else None
         # for the sound only: high, medium or low
         self.sound = cfg.sound_quality if cfg else "high"
+        # a Twitch or SOOP live stream's: best, a height or audio
+        self.live_quality = "best"
 
     def copy(self):
         o = PlayOptions()
@@ -143,9 +146,15 @@ class Player:
         self.player = player
         self.opts = o
         self.tracks = []
+        self.feeder = None  # Streamlink, giving mpv a live stream
+        self.feeder_log = None
+        # a Twitch or SOOP live stream plays alone, through Streamlink
+        if sites.is_live(items[0]["id"]):
+            items = items[:1]
         for i, it in enumerate(items):
             local = "file" in it.f
-            if not local and not valid_video_id(it["id"]):
+            if not local and not (valid_video_id(it["id"]) or
+                                  sites.is_live(it["id"])):
                 raise PlayError("not a video")
             start = 0
             if i == 0 and o.start >= 0:
@@ -181,22 +190,87 @@ class Player:
                 self.log_file = os.path.join(d, "mpv.log")
             except OSError:
                 pass
-        args = self._args(o, ytdl)
+        live = sites.is_live(self.tracks[0].item["id"])
+        args = self._live_args(o) if live else self._args(o, ytdl)
         if not platform.WINDOWS:
             try:
                 os.unlink(self.addr)
             except OSError:
                 pass
+        stdin = subprocess.DEVNULL
+        if live:
+            self.feeder = self._feed(o)
+            stdin = self.feeder.stdout
         try:
             self.proc = subprocess.Popen(
-                args, stdin=subprocess.DEVNULL,
+                args, stdin=stdin,
                 stdout=None if o.terminal else subprocess.DEVNULL,
                 stderr=None if o.terminal else subprocess.DEVNULL,
                 **platform._popen_flags(True))
         except OSError:
+            self._stop_feeder()
             raise PlayError(f"can't start {player}") from None
+        finally:
+            if self.feeder:
+                # mpv has it now: its end tells Streamlink to stop
+                self.feeder.stdout.close()
         self.running = True
         self.started = time.monotonic()
+
+    def _feed(self, o):
+        """Streamlink, writing the live stream for mpv to read"""
+        ident = self.tracks[0].item["id"]
+        names = sites.stream_names(sites.site_of(ident), o.live_quality)
+        err = subprocess.DEVNULL
+        d = platform.cache_dir()
+        if d:
+            try:
+                self.feeder_log = os.path.join(d, "streamlink.log")
+                err = platform.open_append(self.feeder_log)
+                err.write(f"--- {time.strftime('%Y-%m-%d %H:%M:%S')} "
+                          f"{ident} {names}\n")
+                err.flush()
+            except OSError:
+                self.feeder_log = None
+                err = subprocess.DEVNULL
+        try:
+            return subprocess.Popen(
+                streamlink_command() + ["--stdout", "--loglevel", "error",
+                                        sites.live_url(ident), names],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=err,
+                **platform._popen_flags(True))
+        except OSError:
+            raise PlayError("can't start Streamlink") from None
+        finally:
+            if err is not subprocess.DEVNULL:
+                err.close()
+
+    def _stop_feeder(self):
+        if not self.feeder or self.feeder.poll() is not None:
+            return
+        try:
+            self.feeder.terminate()
+            self.feeder.wait(5)
+        except (OSError, subprocess.TimeoutExpired):
+            self.feeder.kill()
+            self.feeder.wait()
+
+    def _live_args(self, o):
+        """mpv reading the live stream Streamlink gives it"""
+        it = self.tracks[0].item
+        a = [self.player, f"--input-ipc-server={self.addr}"]
+        if self.log_file:
+            a.append(f"--log-file={self.log_file}")
+        a.append("--force-media-title=" + clean(
+            f"{it['channel'] or ''}: {it['title'] or ''}".strip(": ")))
+        if o.live_quality == "audio":
+            a.append("--no-video")
+        elif o.terminal:
+            a += ["--vo=tct", "--really-quiet"]
+        else:
+            a.append("--force-window=immediate")
+        a.append("-")
+        return a
 
     def _args(self, o, ytdl):
         a = [self.player, f"--input-ipc-server={self.addr}"]
@@ -384,6 +458,7 @@ class Player:
         if self.conn:
             self.conn.close()
             self.conn = None
+        self._stop_feeder()
         if not platform.WINDOWS:
             try:
                 os.unlink(self.addr)
@@ -403,8 +478,36 @@ class Player:
         problem = None
         # it ended on its own, not stopped: say why if nothing played
         if ended and not played:
-            problem = why_nothing(self.log_file)
+            problem = (self.feeder and why_no_stream(self.feeder_log)) or \
+                why_nothing(self.log_file)
         return self.status or 0, problem
+
+
+def streamlink_command():
+    """
+    how to run Streamlink: the one that comes with vts (VTS_STREAMLINK, a
+    program, for the tests)
+    """
+    other = os.environ.get("VTS_STREAMLINK", "")
+    if other and os.path.isabs(other):
+        return [other]
+    return [sys.executable, "-m", "streamlink"]
+
+
+def why_no_stream(log_file):
+    """Streamlink's last error in @log_file ("This stream is offline")"""
+    try:
+        text = platform.read_file(log_file, 1 << 20) if log_file else ""
+    except OSError:
+        return None
+    last = text.rsplit("\n--- ", 1)[-1]
+    for line in reversed(last.splitlines()):
+        if line.startswith("error: "):
+            msg = clean(line[7:]).strip()
+            if "No playable streams" in msg or "offline" in msg.lower():
+                return "Not live right now"
+            return msg[:200] or None
+    return None
 
 
 def _short_links(s):
@@ -637,6 +740,109 @@ class Download:
         if f and not os.path.isabs(f):
             f = os.path.join(self.folder, f)
         return f
+
+
+def file_name(s, limit=80):
+    """@s made fit for a file name on Linux and Windows"""
+    s = "".join("_" if c in '/\\:*?"<>|' or ord(c) < 32 or ord(c) == 127
+                else c for c in clean(s or ""))
+    s = " ".join(s.split())[:limit].strip(". ")
+    return s or "stream"
+
+
+class Recording:
+    """
+    a live stream written to a file by Streamlink until it ends or is
+    stopped (stopping keeps what was recorded: like a Download for the app)
+    """
+    recording = True
+
+    def __init__(self, folder, item, quality):
+        ident = item["id"]
+        site, _, name = sites.split(ident)
+        self.item = item
+        self.folder = folder
+        self.quality = None  # not QUALITY_AUDIO: a video file
+        self.progress = Progress()
+        self.status = None
+        self.cancelled = False
+        self.started = time.time()
+        stamp = time.strftime("%Y-%m-%d %H-%M")
+        self.path = os.path.join(folder, file_name(
+            f"{item['channel'] or name} {stamp} {item['title'] or ''}")
+            + f" [{site} {name}].ts")
+        self.progress.file = self.path
+        self.proc = subprocess.Popen(
+            streamlink_command() + [
+                "--loglevel", "error", "--force", "--output", self.path,
+                sites.live_url(ident),
+                sites.stream_names(site, quality)],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE, **platform._popen_flags(True))
+        self._err = []
+        self._reader = threading.Thread(target=self._read, daemon=True)
+        self._reader.start()
+        self._last = (time.monotonic(), 0)
+
+    def _read(self):
+        for raw in self.proc.stderr:
+            line = raw.decode("utf-8", "replace").strip()
+            if line.startswith("error: "):
+                self._err.append(clean(line[7:])[:200])
+
+    def poll(self):
+        """the file's size so far: whether something changed"""
+        changed = False
+        try:
+            size = os.path.getsize(self.path)
+        except OSError:
+            size = 0
+        if size != self.progress.done:
+            now = time.monotonic()
+            t0, s0 = self._last
+            if now - t0 >= 1:
+                self.progress.speed = (size - s0) / (now - t0)
+                self._last = (now, size)
+            self.progress.done = size
+            self.progress.files = 1
+            changed = True
+        if self.status is None and self.proc.poll() is not None:
+            self._reader.join(1)
+            self.status = self.proc.returncode
+            if self._err:
+                self.progress.error = self._err[-1]
+            changed = True
+        return changed
+
+    def running(self):
+        if self.status is None:
+            self.poll()
+        return self.status is None
+
+    def cancel(self):
+        """stop recording: what is in the file stays"""
+        self.cancelled = True
+        if self.status is None:
+            try:
+                self.proc.terminate()
+            except OSError:
+                pass
+
+    def wait(self, timeout=None):
+        end = None if timeout is None else time.monotonic() + timeout
+        while self.status is None:
+            self.poll()
+            if end is not None and time.monotonic() > end:
+                return False
+            time.sleep(0.05)
+        return True
+
+    def ok(self):
+        """something was recorded"""
+        return self.progress.done > 0
+
+    def file(self):
+        return self.path
 
 
 # --- subtitles ---------------------------------------------------------------

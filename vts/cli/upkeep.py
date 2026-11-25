@@ -413,6 +413,21 @@ def _ago(when):
     return f"{s // 86400} days ago"
 
 
+def doctor_streamlink(d):
+    """Streamlink, for Twitch's and SOOP's live streams: it comes with vts"""
+    from vts import player
+    try:
+        status, text = platform.run_capture(
+            player.streamlink_command() + ["--version"], timeout=60)
+    except OSError:
+        status, text = -1, ""
+    if status == 0 and text.strip():
+        d.say(OK, "streamlink", text.strip().splitlines()[0])
+    else:
+        d.say(WARN, "streamlink", "missing: Twitch's and SOOP's live streams "
+              "can't play; reinstall vts (pipx reinstall vts)")
+
+
 def doctor_local(d, cfg):
     from vts import config
     p = config.default_path(cfg)
@@ -474,6 +489,8 @@ def doctor_local(d, cfg):
               "often 360p, and not as MP3, M4A, Opus or FLAC")
     else:
         d.say(OK, "ffmpeg", where)
+    doctor_streamlink(d)
+
     if not cfg.notifications:
         d.say(INFO, "notifier", "notifications are off")
     elif platform.WINDOWS:

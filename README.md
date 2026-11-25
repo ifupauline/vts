@@ -60,7 +60,7 @@ In the app, `?` shows the keys. The main ones:
 | `p` `P` `a`         | play, play from here on, sound only               |
 | `Q`                 | play in a quality you choose (144p to 4K, or the sound only: high, medium or low) |
 | `u`                 | choose the subtitles (also while it plays)        |
-| `d`                 | download the video in a quality, or the sound (high, medium or low quality) |
+| `d`                 | download the video in a quality, or the sound (high, medium or low quality); on a Twitch or SOOP live stream, record it until you stop it |
 | `w` `+` `A`         | Watch later, add to a playlist, add to what plays |
 | `c` `f` `y`         | the channel, favourite it, copy the link          |
 | `C` `t` `D`         | on a video: comments, chapters, whole description |
@@ -195,9 +195,10 @@ sends nothing anywhere: no account, no telemetry.
 | --- | --- |
 | Settings (a text file) | `%APPDATA%\vts\config` |
 | Library: favourites, history, Watch later, playlists, recent searches, the list of downloads (SQLite) | `%LOCALAPPDATA%\vts\vts.db` (with `vts.db-wal` and `vts.db-shm`) |
-| Cache, safe to delete: thumbnails (`thumbs`), the latest rules (`rules.json`), YouTube's web client version (`client`), when updates last ran (`checked-*`), yt-dlp's version (`yt-dlp-version`), the app's log (`vts.log`) and mpv's (`mpv.log`) | `%LOCALAPPDATA%\vts\cache` |
-| Downloads | your Downloads folder, or the `downloads` setting |
-| The program | `%USERPROFILE%\.local\bin\vts.exe`, and its Python environment in pipx's folder (`py -m pipx environment` says where) |
+| The site you were on, for `start_site = last` | `%LOCALAPPDATA%\vts\last-site` |
+| Cache, safe to delete: thumbnails (`thumbs`), the latest rules (`rules.json`), YouTube's web client version (`client`), when updates last ran (`checked-*`), yt-dlp's version (`yt-dlp-version`), the app's log (`vts.log`), mpv's (`mpv.log`) and Streamlink's (`streamlink.log`) | `%LOCALAPPDATA%\vts\cache` |
+| Downloads and recordings of live streams | your Downloads folder, or the `downloads` setting |
+| The program | `%USERPROFILE%\.local\bin\vts.exe`, and its Python environment in pipx's folder (`py -m pipx environment` says where), Streamlink (for Twitch's and SOOP's live streams) inside it |
 | Check of new videos, only after `vts check --install` | a task named `vts-check` in Task Scheduler |
 
 The install script also adds `%USERPROFILE%\.local\bin` to your PATH
@@ -212,10 +213,11 @@ Nothing else: no service, nothing at startup.
 | --- | --- |
 | Settings (a text file) | `~/.config/vts/config` |
 | Library (SQLite) | `~/.local/share/vts/vts.db` (with `vts.db-wal` and `vts.db-shm`) |
+| The site you were on, for `start_site = last` | `~/.local/share/vts/last-site` |
 | Cache, safe to delete (the same files as on Windows) | `~/.cache/vts` |
 | mpv's connection while a video plays, removed after | `$XDG_RUNTIME_DIR/vts` |
-| Downloads | `~/Downloads`, or the `downloads` setting |
-| The program | `~/.local/bin/vts`, and its Python environment in pipx's folder (`pipx environment` says where) |
+| Downloads and recordings of live streams | `~/Downloads`, or the `downloads` setting |
+| The program | `~/.local/bin/vts`, and its Python environment in pipx's folder (`pipx environment` says where), Streamlink inside it |
 | Check of new videos, only after `vts check --install` | `~/.config/systemd/user/vts-check.service` and `vts-check.timer` |
 
 The `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_CACHE_HOME` and

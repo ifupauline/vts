@@ -135,3 +135,50 @@ class SiteError(Exception):
 def get(key, cfg=None):
     """the Site for @key (twitch or soop), made when first asked"""
     raise KeyError(key)
+
+
+# --- live streams: where they are, the qualities Streamlink names ---------
+
+# the heights each site's live streams come in, highest first
+LIVE_HEIGHTS = {"twitch": (1080, 720, 480, 360, 160),
+                "soop": (1080, 720, 540, 360)}
+
+
+def live_id(site, name):
+    """the id of what the channel @name of @site streams now"""
+    return f"{site}:live:{name}"
+
+
+def live_url(ident):
+    """the page Streamlink plays the live stream @ident from"""
+    site, what, name = split(ident)
+    if what != "live" or not _CHANNEL.get(site, lambda s: False)(name):
+        raise ValueError("not a live stream")
+    if site == "twitch":
+        return f"https://www.twitch.tv/{name}"
+    return f"https://play.sooplive.co.kr/{name}"
+
+
+def is_live(ident):
+    """whether @ident is a Twitch or SOOP live stream"""
+    return isinstance(ident, str) and split(ident)[1] == "live" and \
+        valid_video_id(ident)
+
+
+def stream_names(site, quality):
+    """
+    what to ask Streamlink for: the names of the streams it may pick, the
+    first it has (720 -> 720p60, 720p, 720p30, then lower ones, then the
+    lowest there is). @quality: best, a height or audio
+    """
+    if quality == "best":
+        return "best"
+    if quality == "audio":
+        # SOOP has no sound-only stream: its lowest, mpv drops the picture
+        return "audio_only,worst" if site == "twitch" else "worst"
+    top = int(quality)
+    names = []
+    for h in LIVE_HEIGHTS.get(site, ()):
+        if h <= top:
+            names += [f"{h}p60", f"{h}p", f"{h}p30"]
+    return ",".join(names + ["worst"])

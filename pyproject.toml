@@ -24,6 +24,8 @@ dependencies = [
     "pillow>=9",
     # curses, which Python has everywhere but on Windows
     "windows-curses>=2.3; sys_platform == 'win32'",
+    # Twitch's and SOOP's live streams, without their ads
+    "streamlink>=7",
 ]
 
 [project.urls]

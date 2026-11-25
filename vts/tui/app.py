@@ -56,6 +56,11 @@ def read_key(timeout):
     return _CHARS.get(k, k)
 
 
+def live_label(q):
+    """ "best", "720p", "sound only" """
+    return {"best": "best", "audio": "sound only"}.get(q, f"{q}p")
+
+
 class DownloadJob:
     def __init__(self, dl, item, folder, label):
         self.dl = dl
@@ -67,6 +72,10 @@ class DownloadJob:
     def state(self):
         """ "45% 2.1 MB/s 0:32 left" for the top bar"""
         p = self.dl.progress
+        if getattr(self.dl, "recording", False):
+            # how long, how big
+            return (f"● rec {util.format_time(time.time() - self.dl.started)}"
+                    f" {p.done / 1e6:.1f} MB")
         if p.finishing:
             return "finishing"
         if not p.files:
@@ -149,6 +158,7 @@ class App:
         self.shown = Shown()
         self.entry_y = []  # where each entry was drawn, for the mouse
         self.entry_first = 0
+        self.live = None  # the quality of the live stream that plays
         self.site = "youtube"  # the one shown: in sites.SITES
         self.stacks = {}  # site -> its screens, while another is shown
         self.marks = {}  # video id -> (position, length, watched)
@@ -800,9 +810,71 @@ class App:
                 return None
         return q, sound
 
+    # --- Twitch's and SOOP's live streams -----------------------------------
+
+    def live_quality(self, ident):
+        """the quality setting of the site of the live stream @ident"""
+        site = sites.site_of(ident)
+        return self.cfg.twitch_quality if site == "twitch" else \
+            self.cfg.soop_quality
+
+    def choose_live(self, title, ident, current=None):
+        """a quality for the live stream @ident, from a menu, or None"""
+        site = sites.site_of(ident)
+        qs = config.TWITCH_QUALITIES if site == "twitch" else \
+            config.SOOP_QUALITIES
+        names = [live_label(q) for q in qs]
+        current = current or self.live_quality(ident)
+        i = self.choose(title, names, qs.index(current) if current in qs
+                        else 0)
+        return None if i < 0 else qs[i]
+
+    def play_live(self, it, quality=None):
+        """@it, a live stream, through Streamlink"""
+        self.stop_player()
+        o = self.play_opts(self.quality)
+        o.live_quality = quality or self.live_quality(it["id"])
+        o.resume = False
+        try:
+            self.player = player.Player(self.cfg.player, self.lib, [it], o)
+        except player.PlayError as e:
+            self.say(str(e), True)
+            return
+        self.live = o.live_quality
+        self.playing = it["title"] or it["channel"]
+        self.say(f"Playing live, {live_label(o.live_quality)}")
+
+    def record(self, it):
+        """d on a live stream: written to a file until stopped"""
+        q = self.choose_live("Record in which quality?", it["id"])
+        if q is None:
+            return
+        try:
+            folder = self.cfg.downloads_dir()
+        except OSError:
+            folder = None
+        if not folder:
+            self.say("the folder for downloads can't be made: see downloads "
+                     "in the settings", True)
+            return
+        try:
+            rec = player.Recording(folder, it, q)
+        except OSError:
+            self.say("Streamlink didn't start", True)
+            return
+        self.downloads.append(DownloadJob(rec, it, folder,
+                                          f"Recording, {live_label(q)}"))
+        self.say("Recording: the top bar follows it; - on it in Library's "
+                 "Downloads stops it")
+
     def play_choose(self, it):
         if not it or it.kind not in ("video", "short"):
             self.say("only videos can be played", True)
+            return
+        if sites.is_live(it["id"]):
+            q = self.choose_live("Play in which quality?", it["id"])
+            if q:
+                self.play_live(it, q)
             return
         got = self.choose_quality("Play in which quality?", self.cfg.quality,
                                   self.cfg.sound_quality)
@@ -876,6 +948,13 @@ class App:
         if not self.player:
             self.say("Nothing is playing")
             return
+        it = self.player.current()
+        if it is not None and sites.is_live(it["id"]):
+            q = self.choose_live("Go on in which quality?", it["id"],
+                                 self.live)
+            if q and self.player:
+                self.play_live(it, q)
+            return
         got = self.choose_quality("Go on in which quality?", self.quality,
                                   self.sound)
         if got is None or not self.player:
@@ -896,6 +975,9 @@ class App:
         videos = [it for it in items if it.kind in ("video", "short")]
         if not videos:
             self.say("nothing to play here", True)
+            return
+        if sites.is_live(videos[0]["id"]):
+            self.play_live(videos[0])
             return
         self.stop_player()
         o = self.play_opts(quality if quality is not None
@@ -1012,6 +1094,9 @@ class App:
         if not it or it.kind not in ("video", "short"):
             self.say("only videos can be downloaded", True)
             return
+        if sites.is_live(it["id"]):
+            self.record(it)
+            return
         qs = player.QUALITIES[:-1]
         names = [f"Video, {player.quality_name(q)}" for q in qs] + \
             list(self.SOUND_NAMES)
@@ -1059,7 +1144,9 @@ class App:
             job.dl.poll()
             self.downloads.remove(job)
             p = job.dl.progress
-            if job.dl.cancelled:
+            if getattr(job.dl, "recording", False):
+                self.recorded(job)
+            elif job.dl.cancelled:
                 self.say(f"Download stopped: {job.title}")
             elif job.dl.status and p.error:
                 # the reason first: a title can fill the line
@@ -1077,6 +1164,20 @@ class App:
                                           config.QUALITY_AUDIO)
                 except LibError as e:
                     log.warn(f"downloads: {e}")
+
+    def recorded(self, job):
+        """a recording ended: stopped, or the stream did"""
+        if not job.dl.ok():
+            why = job.dl.progress.error
+            self.say(f"Nothing recorded{', ' + why if why else ''}: "
+                     f"{job.title}", True, DONE_MESSAGE_TIME)
+            return
+        self.say(f"✓ Recorded: {job.title}, in {job.folder}", False,
+                 DONE_MESSAGE_TIME)
+        try:
+            self.lib.download_add(job.item, job.dl.file(), False)
+        except LibError as e:
+            log.warn(f"downloads: {e}")
 
     # --- more actions ------------------------------------------------------
 
