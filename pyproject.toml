@@ -36,7 +36,7 @@ vts = "vts.main:main"
 test = ["pytest>=7", "pyte>=0.8; sys_platform != 'win32'"]
 
 [tool.setuptools]
-packages = ["vts", "vts.cli", "vts.tui"]
+packages = ["vts", "vts.cli", "vts.sites", "vts.tui"]
 
 [tool.setuptools.dynamic]
 version = { attr = "vts.__version__" }
