@@ -40,10 +40,13 @@ _KEYS = {
 _CHARS = {"\n": "ENTER", "\r": "ENTER", "\x7f": "BACKSPACE",
           "\x08": "BACKSPACE", "\x1b": "ESC"}
 ENTER_KEYS = ("ENTER", "RIGHT", "l")
+# Alt with a digit in PDCurses (Windows): ALT_0 to ALT_9
+PDC_ALT_0 = 0x197
 
 
 def read_key(timeout):
-    """the next key, or None after @timeout seconds"""
+    """the next key, or None after @timeout seconds; Alt with a key as
+    "M-1" """
     D.scr.timeout(int(timeout * 1000) if timeout >= 0 else -1)
     try:
         k = D.scr.get_wch()
@@ -52,8 +55,28 @@ def read_key(timeout):
     except KeyboardInterrupt:
         return "INTERRUPT"
     if isinstance(k, int):
+        if platform.WINDOWS and PDC_ALT_0 <= k <= PDC_ALT_0 + 9:
+            return f"M-{k - PDC_ALT_0}"
         return _KEYS.get(k, f"KEY{k}")
+    if k == "\x1b":
+        # terminals send Alt+1 as Esc then 1, together
+        D.scr.timeout(0)
+        try:
+            k2 = D.scr.get_wch()
+        except (curses.error, KeyboardInterrupt):
+            return "ESC"
+        if isinstance(k2, str) and k2.isprintable() and k2 != " ":
+            return f"M-{k2}"
+        try:
+            (curses.ungetch if isinstance(k2, int) else curses.unget_wch)(k2)
+        except (curses.error, OverflowError):
+            pass
+        return "ESC"
     return _CHARS.get(k, k)
+
+
+# Alt+1, Alt+2, Alt+3: the site
+ALT_SITES = {f"M-{i + 1}": s for i, s in enumerate(sites.SITES)}
 
 
 def as_live(it):
@@ -137,6 +160,7 @@ HELP = (
     "  1 Home  2 Favourites  3 Library  4 Settings",
     "  b                                       the next site: YouTube,"
     " Twitch, SOOP",
+    "  Alt+1  Alt+2  Alt+3                     YouTube, Twitch, SOOP",
     "  /  s                                    search (recent ones first)",
     "  r                                       reload",
     "On a video",
@@ -1468,6 +1492,8 @@ class App:
             self.help = True
         elif key == "b":
             self.next_site()
+        elif key in ALT_SITES:
+            self.go_site(ALT_SITES[key])
         elif key == "1":
             self.root(self.home_of(self.site))
         elif key == "2":

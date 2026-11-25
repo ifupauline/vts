@@ -108,6 +108,24 @@ def test_sites(app):
     assert t.screen.buffer[0][0].bg == youtube_bg
 
 
+def test_alt_digits(app):
+    # Alt+1, 2, 3: a site straight away (terminals send Esc then the digit)
+    t = app()
+    t.keys("3", "Library")
+    assert t.keys("\x1b3", "No SOOP favourites yet."), t.text()
+    assert t.keys("\x1b2", "No Twitch favourites yet."), t.text()
+    t.keys("\x1b1", None, 0.3)
+    assert t.wait(lambda: "YouTube  Twitch  SOOP  › Library" in t.line(0)), \
+        t.line(0)
+    # Esc alone still goes back
+    t.keys("2", "Favourites")
+    t.keys("/", "Search")
+    t.keys("\x1b", None, 0.3)
+    # (in the search box, 3 would be typed)
+    assert t.keys("3", "› Library"), t.text()
+    assert t.keys("\x1b3", "No SOOP favourites yet."), t.text()
+
+
 def test_start_site(app):
     with open(app.conf, "a") as f:
         f.write("start_site = last\n")

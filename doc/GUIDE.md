@@ -60,7 +60,8 @@ keys; `q` goes back, and quits from one of the four sections:
 
 The top bar names three sites: YouTube, Twitch and SOOP. `b` goes to the
 next one, in its own colours (YouTube red, Twitch purple, SOOP blue),
-back where you left it; the `start_site` setting says which one vts
+and Alt+1, Alt+2, Alt+3 straight to YouTube, Twitch or SOOP, back where
+you left it; the `start_site` setting says which one vts
 opens on.
 
 **Twitch** is for its live streams. Its Home is your Twitch favourites:
@@ -213,6 +214,11 @@ desktop notification for each new video, with two buttons where the
 desktop has them: **Play** and **Watch later**. The first check of a
 new favourite only notes what is already there. `vts check --uninstall`
 stops it; Settings (`4`) turns it on and off too.
+
+Run by hand, `vts check` then says which of your favourites are live
+now, on YouTube, Twitch and SOOP (a YouTube channel live on many streams
+at once shows its first three). The timer doesn't ask who is live, and
+neither does `vts check --no-live`.
 
 ## Your library
 

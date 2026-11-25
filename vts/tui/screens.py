@@ -231,7 +231,8 @@ class SiteHome(Screen):
                curses.A_BOLD)
         D.text(y + 3, 2, f"/ finds a {name} channel by its name (or a "
                "link to it), and f keeps it.", app.cols - 4)
-        D.text(y + 4, 2, "b goes to the next site.", app.cols - 4)
+        D.text(y + 4, 2, "b goes to the next site (Alt+1 YouTube, Alt+2 "
+               "Twitch, Alt+3 SOOP).", app.cols - 4)
         return y + 6
 
 

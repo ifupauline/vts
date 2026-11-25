@@ -20,11 +20,14 @@ TASK = "vts-check"
 CHECK_USAGE = """\
 Usage: vts check [OPTION]...
 Look for new videos of your favourite channels, print them and
-send a desktop notification for each.
+send a desktop notification for each; then say which of your
+favourites are live now, on YouTube, Twitch and SOOP.
 
-  -q, --quiet          print nothing (for a timer)
+  -q, --quiet          print nothing (for a timer), and don't
+                       look for live streams
   -n, --no-notify      no desktop notifications
-  -j, --json           print the new videos as JSON
+  -j, --json           print the new videos as JSON (no live)
+      --no-live        don't look for live streams
       --install [MIN]  check every MIN minutes (30 by default)
                        with a {how}
       --uninstall      remove it
@@ -191,11 +194,12 @@ def cmd_check(cfg, argv):
     try:
         opts, args = getopt.gnu_getopt(argv, "qnjh",
                                        ["quiet", "no-notify", "json",
-                                        "install", "uninstall", "help"])
+                                        "no-live", "install", "uninstall",
+                                        "help"])
     except getopt.GetoptError:
         sys.stderr.write(check_usage())
         raise Usage() from None
-    quiet = as_json = do_install = False
+    quiet = as_json = do_install = no_live = False
     notify_on = cfg.notifications
     for o, _ in opts:
         if o in ("-q", "--quiet"):
@@ -204,6 +208,8 @@ def cmd_check(cfg, argv):
             notify_on = False
         elif o in ("-j", "--json"):
             as_json = True
+        elif o == "--no-live":
+            no_live = True
         elif o == "--install":
             do_install = True
         elif o == "--uninstall":
@@ -245,6 +251,13 @@ def cmd_check(cfg, argv):
             except FileNotFoundError:
                 log.warn(f"{cfg.notifier} is not installed: no desktop "
                          "notifications")
+        # who is live: asked by hand only (a timer prints nothing)
+        lv = None
+        if not (quiet or as_json or no_live):
+            try:
+                lv = check.live(yt, lib)
+            except LibError as e:
+                log.err(str(e))
     if as_json:
         print_json(c.fresh.to_json())
     elif not quiet:
@@ -257,8 +270,35 @@ def cmd_check(cfg, argv):
         print(f"vts: {c.first} channel{'' if c.first == 1 else 's'} checked "
               "for the first time: from now on, their new videos",
               file=sys.stderr)
+    if lv:
+        print_live(lv)
     # a failure only when nothing at all could be read
     return EXIT_FAIL if c.channels and c.failed == c.channels else EXIT_OK
+
+
+def print_live(lv):
+    """the live streams of the favourites, by site; on a terminal with a
+    heading for each site, else lines as search prints them"""
+    from vts import sites
+    cols = platform.term_cols()
+    any_live = False
+    for key in sites.SITES:
+        found = lv.found[key]
+        if not found:
+            continue
+        any_live = True
+        if cols:
+            out()
+            out(f"Live now on {sites.NAMES[key]}:")
+        print_items(found, cols)
+        if cols:
+            for ident, n in lv.more.items():
+                if any(it["channel_id"] == ident for it in found):
+                    name = next(it["channel"] for it in found
+                                if it["channel_id"] == ident)
+                    out(f"  and {n} more live on {name}")
+    if cols and not any_live and lv.channels:
+        out("None of your favourites is live now.")
 
 
 def cmd_notified(cfg, argv):

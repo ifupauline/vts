@@ -27,7 +27,7 @@ browsing.
   you want, and a desktop notification for each new video, even with vts
   closed.
 - **Twitch and SOOP too.** `b` goes to Twitch (in purple), then to SOOP
-  (in blue): your favourite channels, those live first, played in mpv
+  (in blue), or Alt+1, Alt+2, Alt+3 straight to YouTube, Twitch, SOOP: your favourite channels, those live first, played in mpv
   without Twitch's ads (through Streamlink, which comes with vts), in the
   quality you choose, and recorded to a file if you want. On SOOP, each
   channel's past broadcasts too, resumed where you stopped. No account
@@ -62,6 +62,7 @@ In the app, `?` shows the keys. The main ones:
 | ------------------- | ------------------------------------------------- |
 | `1` `2` `3` `4`     | Home, Favourites, Library, Settings               |
 | `b`                 | the next site: YouTube, Twitch, SOOP |
+| Alt+`1` `2` `3`     | YouTube, Twitch, SOOP                             |
 | `/`                 | search (recent searches, suggestions as you type, `F` for filters; Esc cancels); a link or an @handle opens what it names, a handle without its @ is found too |
 | Enter, Backspace    | open, back                                        |
 | `p` `P` `a`         | play, play from here on, sound only               |
@@ -100,6 +101,7 @@ $ vts download -q 720 -d ~/Videos dQw4w9WgXcQ
 $ vts download --audio-format mp3 -d ~/Music dQw4w9WgXcQ
 $ vts download --audio-format mp3 --sound-quality medium dQw4w9WgXcQ
 $ vts subtitles dQw4w9WgXcQ           # then: vts play --subs de-DE ...
+$ vts check                           # new videos, and which favourites are live
 $ vts check --install                 # new videos notified every 30 minutes
 $ vts doctor                          # does everything work?
 ```
@@ -125,7 +127,7 @@ vts 1.0.0
   ok  ffmpeg       /usr/bin/ffmpeg
   ok  notifier     /usr/bin/notify-send
   ok  timer        new videos checked by /home/me/.config/systemd/user/vts-check.timer
-  ok  rules        revision 2026111302, built in; updates on, checked 3 h ago
+  ok  rules        revision 2026112501, built in; updates on, checked 3 h ago
   ok  search       20 results, web client 2.20261111.01.00
   ok  video page   20 videos up next, comments
   ok  feeds        15 videos from Kurzgesagt – In a Nutshell

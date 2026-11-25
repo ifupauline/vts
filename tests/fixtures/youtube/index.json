@@ -279,6 +279,24 @@
         "path": "sch.sooplive.co.kr/api.php?m=bjSearch&v=3.0&szKeyword=%EA%B9%80%EC%A0%95%EC%9A%B0&nPageNo=1&nListCnt=20&c=UTF-8"
       },
       "file": "soop-search-kimjungwoo.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+        "params": "EgdzdHJlYW1z8gYECgJ6AA==",
+        "hl": "en"
+      },
+      "file": "channel-live-lofigirl.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EgdzdHJlYW1z8gYECgJ6AA==",
+        "hl": "en"
+      },
+      "file": "channel-videos.json"
     }
   ]
 }

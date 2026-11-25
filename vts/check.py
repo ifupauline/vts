@@ -4,9 +4,14 @@ New videos of favourite channels: every favourite's feed is read (a few
 at a time), each entry not seen before is new. The first time a channel
 is checked, what its feed holds is only noted, so adding a favourite
 doesn't bring fifteen notifications.
+
+And who is live now among the favourites of YouTube, Twitch and SOOP
+(vts check by hand: not for the timer).
 """
 
-from vts import feed, log, notify
+from concurrent.futures import ThreadPoolExecutor
+
+from vts import feed, log, notify, sites
 from vts.rules import Page
 from vts.youtube import AGAIN, YouTubeError
 
@@ -86,3 +91,80 @@ def tell(lib, c, notifier, actions=True):
                     f"{'' if left == 1 else 's'}")
         sent += 1
     return sent
+
+
+# --- live now ----------------------------------------------------------------
+
+LIVE_PER_CHANNEL = 3  # a channel live on many streams at once: the first
+
+
+class Live:
+    def __init__(self):
+        self.found = {site: [] for site in sites.SITES}  # live streams
+        self.more = {}  # channel id: how many more live streams
+        self.channels = 0  # favourites asked
+        self.failed = []  # why, for each site or channel
+
+
+def _youtube_live(yt, fav):
+    from vts import channel
+    b = channel.get(yt, fav.id, "live")
+    on = [it for it in b.page.items if it.kind == "video" and
+          "live" in it.f and it["channel_id"] in (None, fav.id)]
+    for it in on:
+        it.f["channel_id"] = fav.id
+        it.f["channel"] = fav.name
+    return on
+
+
+def live(yt, lib):
+    """the live streams of every favourite, of every site; LibError"""
+    from vts.youtube import YouTubeError
+    lv = Live()
+    favs = lib.favs()
+    lv.channels = len(favs)
+    if favs:
+        yt.bootstrap()
+        with ThreadPoolExecutor(PARALLEL) as pool:
+            got = list(pool.map(lambda f: _try(_youtube_live, yt, f), favs))
+        for f, r in zip(favs, got):
+            if isinstance(r, YouTubeError):
+                log.warn(f"{f.name}: its live streams can't be read "
+                         f"({r})")
+                lv.failed.append(f.name)
+                continue
+            lv.found["youtube"] += r[:LIVE_PER_CHANNEL]
+            if len(r) > LIVE_PER_CHANNEL:
+                lv.more[f.id] = len(r) - LIVE_PER_CHANNEL
+    for key in sites.SITES:
+        if key == "youtube":
+            continue
+        favs = lib.favs(site=key)
+        if not favs:
+            continue
+        lv.channels += len(favs)
+        try:
+            status = sites.get(key).status([f.id for f in favs])
+        except sites.SiteError as e:
+            log.warn(f"{sites.NAMES[key]}: who is live can't be read ({e})")
+            lv.failed.append(sites.NAMES[key])
+            continue
+        on = [stream for _, stream in status if stream]
+        # the most watched first, as on its Home
+        on.sort(key=lambda it: -_count(it["views"]))
+        lv.found[key] = on
+    return lv
+
+
+def _try(fn, *args):
+    from vts.youtube import YouTubeError
+    try:
+        return fn(*args)
+    except YouTubeError as e:
+        return e
+
+
+def _count(views):
+    digits = "".join(c for c in str(views or "").split(" ")[0]
+                     if c.isdigit())
+    return int(digits) if digits else 0

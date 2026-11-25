@@ -168,6 +168,33 @@ def test_check(vts, youtube, env):
                     "&file=feed-UCsXVk37bltHxD1rDPwtNM8Q.xml")
 
 
+def test_check_live(vts, env, monkeypatch):
+    # favourites on the three sites: some live (Lofi Girl twice, and more
+    # it doesn't show; ComeBackTV; effort김정우), some not
+    for k, v in env.items():
+        monkeypatch.setenv(k, v)
+    from vts.library import Library
+    with Library() as lib:
+        lib.fav_add("UCSJ4gkVC6NrvII8umztf0Ow", "Lofi Girl", "@LofiGirl")
+        lib.fav_add("UCsXVk37bltHxD1rDPwtNM8Q", "Kurzgesagt", "@kurzgesagt")
+        lib.fav_add("twitch:esl_sc2", "ESL_SC2", "esl_sc2")
+        lib.fav_add("twitch:comebacktv", "ComeBackTV", "comebacktv")
+        lib.fav_add("soop:momo130", "effort김정우", "momo130")
+    r = vts("check", "-n")
+    assert r.code == 0, r
+    lines = [ln.split("\t") for ln in r.out.splitlines()]
+    live = [ln[:2] + ln[3:5] for ln in lines if ln[4] == "LIVE"]
+    assert live == [
+        ["video", "4t4AQ15yj1M", "Lofi Girl", "LIVE"],
+        ["video", "0sfDth4lMLc", "Lofi Girl", "LIVE"],
+        ["video", "twitch:live:comebacktv", "ComeBackTV", "LIVE"],
+        ["video", "soop:live:momo130", "effort김정우", "LIVE"]], r.out
+    # not for a timer, nor as JSON, nor when asked not to
+    assert vts("check", "-n", "-q").out == ""
+    r = vts("check", "-n", "--no-live")
+    assert "LIVE" not in r.out, r
+
+
 def test_search_as_handle(vts):
     # YouTube finds nothing for these words: they are a channel's handle
     r = vts("search", "kurzgesagt")

@@ -208,13 +208,19 @@ Your playlists:
 .BI "list remove " "name video" ....
 .SS Notifications and upkeep
 .TP
-.BI "check " "\fR[\fP\-q\fR] [\fP\-n\fR] [\fP\-j\fR]\fP"
+.BI "check " "\fR[\fP\-q\fR] [\fP\-n\fR] [\fP\-j\fR] [\fP\-\-no\-live\fR]\fP"
 Look for new videos of your favourite channels, print them and send a
 desktop notification for each (none with
 .BR \-n ,
 nothing printed with
 .BR \-q ).
 A channel's first check only notes what is there.
+Then say which favourites are live now, on YouTube, Twitch and SOOP
+(not with
+.BR \-q ,
+.B \-j
+or
+.BR \-\-no\-live ).
 .TP
 .BI "check \-\-install " "\fR[\fPminutes\fR]\fP"
 Check every
@@ -264,7 +270,9 @@ The main keys
 .TP 14
 .B b
 The next site (YouTube, Twitch, SOOP), each with its screens and
-colours.
+colours;
+.BR Alt+1 ", " Alt+2 ", " Alt+3
+go straight to YouTube, Twitch, SOOP.
 Twitch's and SOOP's Home list their favourite channels, those live
 first; live streams play through Streamlink (comes with vts), and
 .B d

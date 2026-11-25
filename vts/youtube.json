@@ -1,7 +1,7 @@
 {
   "comment": "Where vts finds things in YouTube's answers. Data only: each field lists paths tried in order, the first that gives a value wins. A path is member names and array positions separated by dots; -1 is the last element, * any element, {a/b} keeps going only from a node that has a.b; a final =VALUE only matches that value. Text is read from strings, simpleText, runs and content.",
   "version": 1,
-  "revision": 2026111302,
+  "revision": 2026112501,
   "skip": [
     "adSlotRenderer",
     "promotedSparklesWebRenderer",
@@ -259,6 +259,10 @@
         "views": [
           "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.0.text",
           "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.0.metadataParts.0.text"
+        ],
+        "live": [
+          "contentImage.thumbnailViewModel.overlays.*.thumbnailBottomOverlayViewModel.badges.*.thumbnailBadgeViewModel.badgeStyle=THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE",
+          "contentImage.thumbnailViewModel.overlays.*.thumbnailOverlayBadgeViewModel.thumbnailBadges.*.thumbnailBadgeViewModel.badgeStyle=THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE"
         ],
         "published": [
           "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.1.metadataParts.1.text",

@@ -178,6 +178,16 @@ def check_channel(vts, env):
         at_least(c.get("items", []), 3, "results inside the channel")
 
 
+def check_youtube_live(vts, env):
+    """a channel always live: its live streams marked so (vts check)"""
+    c = run(vts, env, "channel", "--json", "-t", "live", "@LofiGirl")
+    if c is None:
+        return
+    live = [i for i in c["items"] if i.get("live")]
+    at_least(live, 1, "live streams of Lofi Girl")
+    has(live[0], "id", "title", "views")
+
+
 def check_playlist(vts, env):
     p = run(vts, env, "playlist", "--json", PLAYLIST)
     if p is None:
@@ -307,8 +317,8 @@ def check_soop(vts, env):
 
 
 CHECKS = [check_search, check_filters, check_video, check_chapters,
-          check_comments, check_channel, check_playlist, check_feed,
-          check_suggest, check_doctor, check_twitch, check_soop]
+          check_comments, check_channel, check_youtube_live, check_playlist,
+          check_feed, check_suggest, check_doctor, check_twitch, check_soop]
 
 
 def main():
