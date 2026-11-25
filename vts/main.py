@@ -62,7 +62,12 @@ Settings:
 
 def config_help(origin):
     out = [CONFIG_USAGE.format(path=origin.path or "(none: no home folder)")]
-    for s in config.SETTINGS:
+    section = None
+    for s in sorted(config.SETTINGS,
+                    key=lambda s: config.SECTIONS.index(s.section)):
+        if s.section != section:
+            section = s.section
+            out.append(f"{section}:\n")
         out.append(f"  {s.key}\n")
         for line in textwrap.wrap(s.about, 68):
             out.append(f"      {line}\n")

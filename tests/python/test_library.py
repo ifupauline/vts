@@ -333,3 +333,66 @@ def test_windows_places(tmp_path, monkeypatch):
     monkeypatch.setenv("ProgramFiles", str(tmp_path))
     assert platform.find_program("mpv") == str(d / "mpv.exe")
     assert platform.find_program("yt-dlp") is None
+
+
+@pytest.mark.parametrize("ident, channel, video", [
+    ("UCsXVk37bltHxD1rDPwtNM8Q", True, False),
+    ("dQw4w9WgXcQ", False, True),
+    ("twitch:esl_sc2", True, False),
+    ("twitch:live:esl_sc2", False, True),
+    ("soop:brainzerg7", True, False),
+    ("soop:live:brainzerg7", False, True),
+    ("soop:vod:213143129", False, True),
+    ("twitch:Upper", False, False),
+    ("twitch:vod:123", False, False),
+    ("soop:vod:12a", False, False),
+    ("soop:x", False, False),
+    ("youtube:dQw4w9WgXcQ", False, False),
+    ("twitch:", False, False),
+])
+def test_site_ids(ident, channel, video):
+    from vts import sites
+    assert sites.valid_channel_id(ident) == channel
+    assert sites.valid_video_id(ident) == video
+
+
+def test_favourites_per_site(lib):
+    from vts import sites
+    lib.fav_add("UCsXVk37bltHxD1rDPwtNM8Q", "Kurzgesagt")
+    lib.fav_add("twitch:esl_sc2", "ESL_SC2")
+    lib.fav_add("soop:brainzerg7", "김윤환")
+    # YouTube's by default: the check and the exports see only them
+    assert [f.id for f in lib.favs()] == ["UCsXVk37bltHxD1rDPwtNM8Q"]
+    assert [f.id for f in lib.favs("twitch")] == ["twitch:esl_sc2"]
+    assert [f.id for f in lib.favs("soop")] == ["soop:brainzerg7"]
+    assert len(lib.favs(None)) == 3
+    assert "twitch" not in lib.fav_export() and \
+        "soop" not in lib.fav_export(opml=False)
+    assert sites.site_of(lib.favs("soop")[0].id) == "soop"
+    # past broadcasts and live streams go in the history and lists too
+    lib.hist_record(video("soop:vod:213143129", title="캄몬스타즈",
+                          channel="김윤환", channel_id="soop:brainzerg7"),
+                    120, 3600)
+    assert lib.hist_resume("soop:vod:213143129") == 120
+    lib.list_add("Watch later", video("soop:vod:213143129", title="x"))
+    with pytest.raises(LibError):
+        lib.fav_add("twitch:Not Valid", "x")
+
+
+def test_site_settings():
+    from vts import config
+    c = config.Config()
+    assert (c.start_site, c.twitch_quality, c.soop_quality,
+            c.soop_vod_quality) == ("youtube", "best", "best", "best")
+    c.set("twitch.quality", "720")
+    c.set("soop.vod_quality", "audio")
+    c.set("start_site", "last")
+    assert c.get("twitch.quality") == "720" and c.twitch_quality == "720"
+    assert c.get("soop.vod_quality") == "audio"
+    for key, bad in (("twitch.quality", "540"), ("soop.quality", "160"),
+                     ("start_site", "dailymotion")):
+        with pytest.raises(config.BadValue):
+            c.set(key, bad)
+    assert [s.section for s in config.SETTINGS if s.key.startswith(
+        ("twitch.", "soop."))] == ["Twitch", "SOOP", "SOOP"]
+    assert {s.section for s in config.SETTINGS} == set(config.SECTIONS)

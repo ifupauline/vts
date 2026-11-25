@@ -56,10 +56,14 @@ def test_settings_screen(app):
     t = app()
     assert t.keys("4", "Saved in"), t.text()
     assert "› Settings" in t.line(0)
-    assert t.wait(lambda: "language = " in t.text() and
-                  "The language of YouTube" in t.text()), t.text()
-    # quality: from a menu, written in the file
-    t.keys("jj", "quality = 1080")
+    # in sections: General first, then each site's
+    assert t.wait(lambda: "player = " in t.text() and
+                  "The program that plays videos" in t.text()), t.text()
+    for section in ("General", "YouTube"):
+        assert any(t.line(y).strip() == section for y in range(30)), \
+            t.text()
+    # quality, the 3rd of YouTube's: from a menu, written in the file
+    t.keys("jjjjjjjjj", "quality = 1080")
     assert t.wait(lambda: "highest quality" in t.text())
     t.keys("\r", "best")
     assert t.keys("gj\r", "quality = 2160"), t.text()
@@ -69,6 +73,13 @@ def test_settings_screen(app):
     t.keys("d", "quality = 1080 (the default)")
     with open(app.conf) as f:
         assert "quality" not in f.read()
+    # a Twitch setting, kept under its name
+    t.keys("jjjj", "twitch.quality = best")
+    assert t.wait(lambda: "Twitch's live streams" in t.text()), t.text()
+    t.keys("\r", "1080")
+    assert t.keys("jj\r", "twitch.quality = 720"), t.text()
+    with open(app.conf) as f:
+        assert "twitch.quality = 720\n" in f.read()
     # the check, as vts doctor does it
     t.keys("Gk\r", "Check")
     assert t.wait(lambda: "ok  search" in t.text(), 15), t.text()

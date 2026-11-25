@@ -15,6 +15,7 @@ import time
 import xml.parsers.expat
 
 from vts import platform
+from vts import sites
 from vts.rules import (KINDS, Item, Page, valid_channel_id, valid_video_id)
 from vts.text import clean
 
@@ -240,7 +241,8 @@ class Library:
     # --- favourites -------------------------------------------------------
 
     def fav_add(self, ident, name, handle=None, group=None):
-        if not valid_channel_id(ident) or not name:
+        """@ident: a channel of any site (sites.py)"""
+        if not sites.valid_channel_id(ident) or not name:
             raise LibError("not a channel", INVALID)
         try:
             self.db.execute(
@@ -273,11 +275,12 @@ class Library:
                          " = ?", (v, ident)).rowcount:
             raise LibError("not a favourite", NOT_FOUND)
 
-    def favs(self):
-        """all of them, by group then name"""
+    def favs(self, site="youtube"):
+        """those of @site (None: all), by group then name"""
+        where, args = sites.sql_filter(site, "channel_id")
         return [Fav(r) for r in self._run(
-            f"SELECT {FAV_COLUMNS} FROM favorites"
-            " ORDER BY grp, name COLLATE NOCASE")]
+            f"SELECT {FAV_COLUMNS} FROM favorites WHERE {where}"
+            " ORDER BY grp, name COLLATE NOCASE", args)]
 
     def fav(self, ident):
         """one of them, or None"""
@@ -456,7 +459,7 @@ class Library:
         """
         position = int(position)
         length = int(length)
-        if not valid_video_id(it["id"]) or position < 0 or length < 0:
+        if not sites.valid_video_id(it["id"]) or position < 0 or length < 0:
             raise LibError("not a video", INVALID)
         watched = int(length > 0 and position >= length * 9 // 10)
         self._run(
@@ -564,7 +567,7 @@ class Library:
     def list_add(self, name, it):
         """@it at the end of the playlist @name; EXISTS if already in it"""
         lid = self._list_id(name)
-        if not valid_video_id(it["id"]):
+        if not sites.valid_video_id(it["id"]):
             raise LibError("not a video", INVALID)
         if not self._run(
                 "INSERT OR IGNORE INTO list_items (list, pos, video_id,"

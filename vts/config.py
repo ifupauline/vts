@@ -15,6 +15,12 @@ QUALITY_AUDIO = 0
 HEIGHTS = (2160, 1440, 1080, 720, 480, 360, 240, 144)
 THUMBNAILS = ("no", "auto", "blocks", "sixel", "kitty", "iterm2")
 SOUND_QUALITIES = ("high", "medium", "low")
+START_SITES = ("youtube", "twitch", "soop", "last")
+# the qualities live streams and past broadcasts come in (Streamlink's
+# names without "p"; audio: the sound only)
+TWITCH_QUALITIES = ("best", "1080", "720", "480", "360", "160", "audio")
+SOOP_QUALITIES = ("best", "1080", "720", "540", "360", "audio")
+SECTIONS = ("General", "YouTube", "Twitch", "SOOP")
 PROGRAM_MAX = 255
 
 
@@ -58,6 +64,15 @@ def check_quality(v):
         return h
     raise BadValue("expected best, audio, 2160, 1440, 1080, 720, 480, 360, "
                    "240 or 144")
+
+
+def _one_of(choices):
+    def check(v):
+        if v in choices:
+            return v
+        raise BadValue("expected " + ", ".join(choices[:-1]) + " or " +
+                       choices[-1])
+    return check
 
 
 def check_sound(v):
@@ -126,8 +141,12 @@ def quality_label(q):
 
 
 class Setting:
-    def __init__(self, key, check, values, default, about, choices=None):
+    def __init__(self, key, check, values, default, about, choices=None,
+                 section="YouTube"):
         self.key = key
+        # where it is kept: twitch.quality in twitch_quality
+        self.attr = key.replace(".", "_")
+        self.section = section  # in SECTIONS
         self.check = check
         self.values = values  # what can be written, for people
         self.default = default  # what the default is, for people
@@ -162,11 +181,12 @@ SETTINGS = (
             "bitrate too.", list(SOUND_QUALITIES)),
     Setting("player", check_program, "the name or path of a program",
             "mpv", "The program that plays videos. vts talks to it while it "
-            "plays (position, pause, next), which only mpv can do."),
+            "plays (position, pause, next), which only mpv can do.",
+            section="General"),
     Setting("downloader", check_program, "the name or path of a program",
             "yt-dlp", "The program that finds the streams of a video (for "
             "mpv too) and downloads them. vts keeps it up to date when you "
-            "installed it yourself."),
+            "installed it yourself.", section="General"),
     Setting("subtitles", check_subtitles, "languages, most wanted first: "
             "fr,en or de-DE, or nothing", "nothing: no subtitles",
             "The subtitles shown by default, when a video has them in one "
@@ -180,7 +200,7 @@ SETTINGS = (
             "iTerm2), coloured blocks elsewhere. blocks: coloured blocks, "
             "for every terminal (and inside tmux). sixel, kitty, iterm2: "
             "that kind of picture, when auto guesses wrong. no: none.",
-            list(THUMBNAILS[1:]) + ["no"]),
+            list(THUMBNAILS[1:]) + ["no"], "General"),
     Setting("notifications", check_bool, "yes or no", "yes",
             "Desktop notifications of the new videos of your favourite "
             "channels, when `vts check` finds them (yourself or every 30 "
@@ -189,17 +209,37 @@ SETTINGS = (
     Setting("notifier", check_program, "the name or path of a program",
             "notify-send" if not platform.WINDOWS else "(Windows' own)",
             "The program that shows notifications on Linux. On Windows, "
-            "Windows' own notifications are used."),
+            "Windows' own notifications are used.", section="General"),
     Setting("downloads", check_downloads, "a folder: ~/Videos/YouTube, "
             "/media/disk/videos" + (", D:\\Videos" if platform.WINDOWS
                                     else "") + ", or nothing",
             "your Downloads folder", "Where d (and `vts download` without "
-            "-d) puts what it downloads. It is made if it doesn't exist."),
+            "-d) puts what it downloads. It is made if it doesn't exist.",
+            section="General"),
     Setting("updates", check_bool, "yes or no", "yes",
             "Once a day, fetch the latest description of YouTube's pages "
             "(so that vts keeps working when YouTube changes them), and "
             "once a week have yt-dlp update itself. no: never (vts update "
-            "still does it when you ask).", ["yes", "no"]),
+            "still does it when you ask).", ["yes", "no"], "General"),
+    Setting("start_site", _one_of(START_SITES),
+            "youtube, twitch, soop or last", "youtube",
+            "The site vts opens on (b switches between them). last: the "
+            "one you were on when you quit.", list(START_SITES), "General"),
+    Setting("twitch.quality", _one_of(TWITCH_QUALITIES),
+            "best, 1080, 720, 480, 360, 160 or audio", "best",
+            "The quality Twitch's live streams play in (p plays in it, Q "
+            "starts on it). When a stream has nothing that high, the best "
+            "it has plays. audio: the sound only.", list(TWITCH_QUALITIES),
+            "Twitch"),
+    Setting("soop.quality", _one_of(SOOP_QUALITIES),
+            "best, 1080, 720, 540, 360 or audio", "best",
+            "The quality SOOP's live streams play in (p plays in it, Q "
+            "starts on it). audio: the sound only.", list(SOOP_QUALITIES),
+            "SOOP"),
+    Setting("soop.vod_quality", _one_of(SOOP_QUALITIES),
+            "best, 1080, 720, 540, 360 or audio", "best",
+            "The quality SOOP's past broadcasts play in.",
+            list(SOOP_QUALITIES), "SOOP"),
 )
 
 _BY_KEY = {s.key: s for s in SETTINGS}
@@ -223,6 +263,10 @@ class Config:
         self.notifier = "notify-send"
         self.downloads = ""
         self.updates = True
+        self.start_site = "youtube"
+        self.twitch_quality = "best"
+        self.soop_quality = "best"
+        self.soop_vod_quality = "best"
         # from the command line
         self.config_file = None
         self.verbose = False
@@ -269,11 +313,11 @@ class Config:
         s = _BY_KEY.get(key)
         if not s:
             raise KeyError(key)
-        setattr(self, key, s.check(value))
+        setattr(self, s.attr, s.check(value))
 
     def get(self, key):
         """the value of @key as written in the file"""
-        v = getattr(self, key)
+        v = getattr(self, _BY_KEY[key].attr if key in _BY_KEY else key)
         if key == "quality":
             return quality_name(v)
         if isinstance(v, bool):

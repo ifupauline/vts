@@ -51,7 +51,7 @@ keys; `q` goes back, and quits from one of the four sections:
 - `3` **Library**: Watch later, your own playlists, your downloads and
   the history.
 - `4` **Settings**: each setting with what it does and the values it
-  takes; Enter changes the selected one (from a menu, or typed), `d`
+  takes, in sections (General, then YouTube's, Twitch's and SOOP's); Enter changes the selected one (from a menu, or typed), `d`
   puts it back to its default, and it is saved in the settings file at
   once. At the bottom, the checks in the background (on or off),
   "Check now", which tries everything as `vts doctor` does, and "Update
@@ -248,6 +248,10 @@ updates = yes
 | `notifications` | yes, no | yes |
 | `thumbnails` | auto, blocks, sixel, kitty, iterm2, no | auto |
 | `updates` | yes, no | yes |
+| `start_site` | youtube, twitch, soop, last (the one you quit on) | youtube |
+| `twitch.quality` | best, 1080, 720, 480, 360, 160, audio | best |
+| `soop.quality` | best, 1080, 720, 540, 360, audio: live streams | best |
+| `soop.vod_quality` | the same: past broadcasts | best |
 
 ## Keeping up with YouTube
 

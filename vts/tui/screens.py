@@ -915,14 +915,18 @@ class Settings(Screen):
         self.items = []
         self.labels = {}
         self.path = config.default_path(app.cfg)
-        self.labels[0] = "Settings"
-        for s in config.SETTINGS:
-            v = app.cfg.get(s.key)
-            it = Item("setting", id=s.key, title=f"{s.key} = {v}"
-                      if v != "" else f"{s.key} =   ({s.default})",
-                      details=f"{s.values}")
-            it.data = s
-            self.items.append(it)
+        # General first, then each site's
+        for section in config.SECTIONS:
+            self.labels[len(self.items)] = section
+            for s in config.SETTINGS:
+                if s.section != section:
+                    continue
+                v = app.cfg.get(s.key)
+                it = Item("setting", id=s.key, title=f"{s.key} = {v}"
+                          if v != "" else f"{s.key} =   ({s.default})",
+                          details=f"{s.values}")
+                it.data = s
+                self.items.append(it)
         self.labels[len(self.items)] = "New videos in the background"
         timer = upkeep.timer_installed()
         it = Item("action", id="timer", title=(
@@ -979,12 +983,13 @@ class Settings(Screen):
         if not self.path:
             app.say("no home folder: nowhere to keep the settings", True)
             return
-        old = getattr(app.cfg, key)
+        attr = config.setting(key).attr
+        old = getattr(app.cfg, attr)
         try:
             if value is None or (value == "" and key not in (
                     "region", "subtitles", "downloads")):
                 value = None
-                setattr(app.cfg, key, getattr(config.Config(), key))
+                setattr(app.cfg, attr, getattr(config.Config(), attr))
             else:
                 app.cfg.set(key, value)
         except config.BadValue as e:
@@ -994,7 +999,7 @@ class Settings(Screen):
             config.edit_file(self.path, key, None if value is None
                              else app.cfg.get(key))
         except OSError as e:
-            setattr(app.cfg, key, old)
+            setattr(app.cfg, attr, old)
             app.say(f"{self.path}: {e.strerror}", True)
             return
         self.apply(app, key)
