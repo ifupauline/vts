@@ -909,7 +909,9 @@ class Tui:
             pid, status = os.waitpid(self.pid, os.WNOHANG)
             if pid:
                 return os.waitstatus_to_exitcode(status)
-            time.sleep(0.05)
+            # what it still draws read on: a full terminal would block it
+            # before it reads the keys
+            self.pump(None, 0.05)
         os.kill(self.pid, 9)
         os.waitpid(self.pid, 0)
         return -9
