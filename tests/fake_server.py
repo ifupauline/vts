@@ -54,6 +54,8 @@ posts = 0
 thumbs = []
 rules = [None]
 rules_asked = [0]
+latest = [None]
+site_files = {}
 
 
 def fixture_for(endpoint, body):
@@ -192,6 +194,35 @@ class Handler(BaseHTTPRequestHandler):
             with lock:
                 rules[0] = body if body else None
             self.send(200, "ok")
+        elif url.path == "/latest-commit":
+            # vts's latest version on "GitHub"
+            with lock:
+                if self.command == "POST":
+                    latest[0] = body.decode().strip() or None
+                    self.send(200, "ok")
+                elif latest[0]:
+                    self.send(200, latest[0])
+                else:
+                    self.send(404, "{}")
+        elif url.path in ("/twitch.json", "/soop.json"):
+            # newer descriptions of Twitch and SOOP in "the repository"
+            with lock:
+                if self.command == "POST":
+                    if body:
+                        site_files[url.path] = body
+                    else:
+                        site_files.pop(url.path, None)
+                    self.send(200, "ok")
+                else:
+                    # by default the ones of this vts, as on GitHub
+                    body = site_files.get(url.path)
+                    if body is None:
+                        with open(os.path.join(os.path.dirname(
+                                os.path.dirname(os.path.abspath(__file__))),
+                                "vts", url.path[1:]), "rb") as f:
+                            body = f.read()
+                    self.send(200, body,
+                              [("Content-Type", "application/json")])
         elif url.path == "/rules-asked":
             with lock:
                 self.send(200, str(rules_asked[0]))

@@ -183,6 +183,7 @@ class App:
         self.entry_y = []  # where each entry was drawn, for the mouse
         self.entry_first = 0
         self.live = None  # the quality of the live stream that plays
+        self.streamlink_now = False  # Update now: Streamlink when it quits
         self.site = "youtube"  # the one shown: in sites.SITES
         self.stacks = {}  # site -> its screens, while another is shown
         self.marks = {}  # video id -> (position, length, watched)
@@ -1527,6 +1528,12 @@ class App:
                     log.dbg(f"rules update: {e}")
             self._updating = threading.Thread(target=rules, daemon=True)
             self._updating.start()
+        if update.due("sites", update.RULES_EVERY):
+            update.done("sites")
+            threading.Thread(target=update.update_sites, daemon=True).start()
+        # vts itself, installed when it quits
+        from vts import selfupdate
+        threading.Thread(target=selfupdate.check, daemon=True).start()
         if update.due("yt-dlp", update.YTDLP_EVERY):
             update.done("yt-dlp")
             try:
@@ -1574,7 +1581,36 @@ class App:
             said.append(f"{prog}: {e.strerror}")
             bad = True
         update.done("yt-dlp")
+        self.busy("Updating the description of Twitch and SOOP...")
+        for name, got in update.update_sites().items():
+            if isinstance(got, str):
+                bad = True
+                said.append(f"{name}: {got}")
+            elif got:
+                said.append(f"{name}: revision {got}")
+        update.done("sites")
+        self.busy("Looking for a newer vts...")
+        said.append(self.update_itself())
         self.say("; ".join(said), bad, DONE_MESSAGE_TIME)
+
+    def update_itself(self):
+        """a newer vts, installed when it quits, and Streamlink with it"""
+        from vts import selfupdate
+        commit, ok = selfupdate.installed()
+        if not ok:
+            return "vts: run from its source, not updated"
+        update.done("vts")
+        self.streamlink_now = True
+        new = selfupdate.latest()
+        if new is None:
+            return "vts: GitHub didn't answer"
+        if new == commit:
+            return "vts: up to date"
+        try:
+            platform.write_atomic(selfupdate._data("vts-pending"), new + "\n")
+        except (OSError, TypeError):
+            return "vts: can't keep the update for later"
+        return "vts: a newer version, installed when you quit"
 
     def confirm_quit(self):
         """downloads under way: quit anyway?"""
@@ -1595,6 +1631,12 @@ class App:
         problem = update.can_play(self.cfg.player, self.cfg.downloader)
         if problem:
             self.say(problem, True, STARTUP_MESSAGE_TIME)
+        else:
+            # what the helper did after the last quit
+            from vts import selfupdate
+            done = selfupdate.report()
+            if done:
+                self.say(done, "couldn't" in done, STARTUP_MESSAGE_TIME)
         self.start_updates()
         try:
             self._loop()
@@ -1695,6 +1737,10 @@ def run(cfg):
         if app.thumbs:
             app.thumbs.close()
         lib.close()
+        if not cfg.offline and cfg.updates:
+            # what is pending, installed now that it quits
+            from vts import selfupdate
+            selfupdate.after_exit(force=app.streamlink_now)
         log.close()
     return 0
 

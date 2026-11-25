@@ -217,10 +217,12 @@ SETTINGS = (
             "-d) puts what it downloads. It is made if it doesn't exist.",
             section="General"),
     Setting("updates", check_bool, "yes or no", "yes",
-            "Once a day, fetch the latest description of YouTube's pages "
-            "(so that vts keeps working when YouTube changes them), and "
-            "once a week have yt-dlp update itself. no: never (vts update "
-            "still does it when you ask).", ["yes", "no"], "General"),
+            "Once a day, fetch the latest description of YouTube's, "
+            "Twitch's and SOOP's pages (so that vts keeps working when "
+            "they change them) and install a newer vts after you quit; "
+            "once a week, update Streamlink and have yt-dlp update itself. "
+            "no: never (vts update still does it when you ask).",
+            ["yes", "no"], "General"),
     Setting("start_site", _one_of(START_SITES),
             "youtube, twitch, soop or last", "youtube",
             "The site vts opens on (b switches between them). last: the "

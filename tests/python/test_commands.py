@@ -188,7 +188,7 @@ def test_update_rules(vts, env, youtube):
     urllib.request.urlopen(req, timeout=10).read()
     r = vts("update", "--rules")
     assert r.code == 0 and r.out == f"rules: revision {rev + 1} " \
-        f"(was {rev})\n", r
+        f"(was {rev})\ntwitch.json: up to date\nsoop.json: up to date\n", r
     assert os.path.exists(os.path.join(cache_dir(env), "rules.json"))
     assert vts("--offline", "update").code == 1
 

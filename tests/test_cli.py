@@ -1253,15 +1253,18 @@ def test_update(vts, work):
         newer = dict(builtin, revision=rev + 1)
         publish(newer)
         code, out, err = run(vts, "update", "--rules", env=env)
+        # (and Twitch's and SOOP's descriptions: those of this vts)
+        sites_same = "twitch.json: up to date\nsoop.json: up to date\n"
         check(code == 0 and out == f"rules: revision {rev + 1} "
-              f"(was {rev})\n", f"update: {code} {out!r} {err!r}")
+              f"(was {rev})\n" + sites_same,
+              f"update: {code} {out!r} {err!r}")
         check(os.path.exists(kept), "update: kept")
         code, out, err = run(vts, "search", "linus torvalds", env=env)
         check(code == 0 and "Building the PERFECT" in out,
               f"update: search with them {err!r}")
         code, out, err = run(vts, "update", "--rules", env=env)
         check(code == 0 and out == f"rules: revision {rev + 1}, "
-              "up to date\n", f"update again: {out!r} {err!r}")
+              "up to date\n" + sites_same, f"update again: {out!r} {err!r}")
 
         # older, broken or not JSON: refused, the kept ones stay
         with open(kept, "rb") as f:

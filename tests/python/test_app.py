@@ -401,6 +401,19 @@ def test_update_now(app, env):
     assert "Updated yt-dlp to stable@2026.11.11" in t.text(), t.text()
 
 
+def test_said_after_updating_itself(app, env):
+    # what the helper did after the last quit: said at the next start, once
+    data = os.path.join(env["LOCALAPPDATA"], "vts") if WINDOWS else \
+        os.path.join(env["XDG_DATA_HOME"], "vts")
+    os.makedirs(data, exist_ok=True)
+    with open(os.path.join(data, "self-update.json"), "w") as f:
+        json.dump({"sha": "abcdef0123456789abcdef0123456789abcdef01",
+                   "vts": "ok", "streamlink": "ok"}, f)
+    t = app()
+    assert t.wait(lambda: "vts was updated (abcdef0)" in t.text()), t.text()
+    assert not os.path.exists(os.path.join(data, "self-update.json"))
+
+
 def test_downloads_screen(app):
     t = app()
     t.keys("/")

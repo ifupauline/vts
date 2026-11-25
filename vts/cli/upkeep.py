@@ -271,14 +271,16 @@ def cmd_notified(cfg, argv):
 # --- vts update --------------------------------------------------------------
 
 UPDATE_USAGE = """\
-Usage: vts update [--rules | --yt-dlp]
+Usage: vts update [--rules | --yt-dlp | --vts]
 Update now what vts updates on its own once in a while:
-the rules that tell where things are in YouTube's answers
-(from vts' repository), and yt-dlp when you installed it
-yourself (yt-dlp --update).
+the rules that tell where things are in YouTube's, Twitch's
+and SOOP's answers (from vts' repository), yt-dlp when you
+installed it yourself (yt-dlp --update), and vts itself with
+Streamlink (installed as this command ends).
 
   --rules   only the rules
   --yt-dlp  only yt-dlp
+  --vts     only vts and Streamlink
 """
 
 
@@ -331,20 +333,23 @@ def update_ytdlp(cfg):
 def cmd_update(cfg, argv):
     import getopt
     try:
-        opts, args = getopt.gnu_getopt(argv, "h", ["rules", "yt-dlp", "help"])
+        opts, args = getopt.gnu_getopt(argv, "h", ["rules", "yt-dlp", "vts",
+                                                   "help"])
     except getopt.GetoptError:
         sys.stderr.write(UPDATE_USAGE)
         return EXIT_USAGE
-    rules = ytdlp = True
+    rules = ytdlp = itself = True
     for o, _ in opts:
         if o == "--rules":
-            ytdlp = False
+            ytdlp = itself = False
         elif o == "--yt-dlp":
-            rules = False
+            rules = itself = False
+        elif o == "--vts":
+            rules = ytdlp = False
         else:
             sys.stdout.write(UPDATE_USAGE)
             return EXIT_OK
-    if args or (not rules and not ytdlp):
+    if args or len(opts) > 1:
         sys.stderr.write(UPDATE_USAGE)
         return EXIT_USAGE
     if cfg.offline:
@@ -353,9 +358,55 @@ def cmd_update(cfg, argv):
     ok = True
     if rules:
         ok &= update_rules(cfg)
+        ok &= update_sites()
     if ytdlp:
         ok &= update_ytdlp(cfg)
+    if itself:
+        ok &= update_itself()
     return EXIT_OK if ok else EXIT_FAIL
+
+
+def update_sites():
+    """twitch.json and soop.json"""
+    ok = True
+    for name, got in update.update_sites().items():
+        if isinstance(got, str):
+            log.err(f"{name}.json: {got}")
+            ok = False
+        elif got:
+            out(f"{name}.json: revision {got}")
+        else:
+            out(f"{name}.json: up to date")
+    update.done("sites")
+    return ok
+
+
+def update_itself():
+    """vts and Streamlink, by a helper started as this command ends"""
+    from vts import selfupdate
+    commit, ok = selfupdate.installed()
+    if not ok:
+        out("vts: not an installed copy (run from its source, or not "
+            "yours to change): not updated")
+        return True
+    update.done("vts")
+    new = selfupdate.latest()
+    if new is None:
+        log.err("vts: GitHub didn't say which version is the latest")
+        ok = False
+    elif new == commit:
+        out(f"vts: {new[:7]}, up to date")
+    else:
+        try:
+            platform.write_atomic(selfupdate._data("vts-pending"), new + "\n")
+        except (OSError, TypeError) as e:
+            log.err(f"vts: {e}")
+            return False
+        out(f"vts: {new[:7]} is installed in the background now (it was "
+            f"{commit[:7] if commit else 'unknown'})")
+    if selfupdate.after_exit(force=True):
+        out("Streamlink: updated in the background now")
+    return ok
 
 
 # --- vts doctor --------------------------------------------------------------

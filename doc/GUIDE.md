@@ -24,7 +24,7 @@ irm https://raw.githubusercontent.com/ifupauline/vts/main/install.ps1 | iex
 For yt-dlp, prefer its own release over the distribution's package,
 which is often too old for YouTube: download the `yt-dlp` program from
 its releases page into `~/.local/bin` and make it executable. vts then
-keeps it up to date (see [Keeping up with YouTube](#keeping-up-with-youtube)).
+keeps it up to date (see [Keeping up to date](#keeping-up-to-date)).
 
 The app says what is missing when it starts. To check everything:
 
@@ -284,19 +284,28 @@ updates = yes
 | `soop.quality` | best, 1080, 720, 540, 360, audio: live streams | best |
 | `soop.vod_quality` | the same: past broadcasts | best |
 
-## Keeping up with YouTube
+## Keeping up to date
 
 YouTube changes its pages often, and a program that reads them has to
-follow. vts does it on its own:
+follow. vts does it on its own, and keeps itself up to date too:
 
 - once a day, the app and `vts check` fetch the latest description of
   where things are in YouTube's answers from vts' repository. It is
-  kept only if it is complete and newer than the one in use;
-- once a week, yt-dlp is told to update itself, if you installed it
-  yourself (vts leaves the system's packages to the system).
+  kept only if it is complete and newer than the one in use. The same
+  for Twitch's and SOOP's (`twitch.json`, `soop.json`);
+- once a day, the app asks GitHub for the latest vts. A newer one is
+  installed after you quit, in the background (Windows can't replace a
+  running program), by pip in vts' own environment; the next start
+  says "vts was updated", or why it couldn't;
+- once a week, Streamlink is updated after you quit, and yt-dlp is told
+  to update itself, if you installed it yourself (vts leaves the
+  system's packages to the system).
 
-`vts update` does both now. `updates = no` in the settings, or
-`--offline` on the command line, turns it off.
+`vts update` does it all now (`--rules`, `--yt-dlp` or `--vts` for one
+of them). `updates = no` in the settings, or `--offline` on the command
+line, turns it off. Only a vts installed from GitHub with pipx (as the
+install line does) updates itself; one run from its source, or
+installed to be edited, is left alone.
 
 ## When something goes wrong
 

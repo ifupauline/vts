@@ -28,7 +28,8 @@ assumes everything coming from the network is hostile:
   exact format before use, and the addresses given to mpv and yt-dlp are
   built by vts from them, so an answer can't slip in an option or
   another site. Text in desktop notifications has its markup escaped.
-- **Network.** HTTPS only to YouTube, i.ytimg.com and GitHub (an `https`
+- **Network.** HTTPS only to YouTube, i.ytimg.com, GitHub, and Twitch's
+  and SOOP's public APIs and pictures (an `https`
   request is never redirected to `http`); answers are size-limited, and
   timeouts and retries are bounded. Thumbnail addresses are made from
   video identifiers, not taken from answers.
@@ -52,6 +53,18 @@ updates off (`updates = no`, `--offline`) keeps vts on its built-in
 rules. yt-dlp is only told to update itself (`yt-dlp --update`, its own
 update mechanism) when it is a file you can replace, not one installed
 by the system.
+
+Twitch's and SOOP's descriptions (`twitch.json`, `soop.json`: their API
+addresses and queries) are data too, fetched and checked the same way.
+
+vts updates itself: once a day it asks GitHub's API for the latest commit
+of this repository's `main` branch, and after the app quits a helper has
+pip install that commit (from `git+https://github.com/ifupauline/vts`,
+or GitHub's archive when git is missing) into vts' own environment, and
+upgrades Streamlink weekly. That is code from this repository run with
+your rights, as when you installed vts; only a copy pip installed from
+this repository updates itself, and `updates = no` or `--offline` turns
+it off.
 
 ## What vts doesn't protect against
 

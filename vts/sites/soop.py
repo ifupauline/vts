@@ -79,7 +79,10 @@ class Soop(Site):
     name = "SOOP"
 
     def __init__(self, description=None):
-        self.d = description or load_description()
+        if description is None:
+            from vts import update
+            description = update.best_site("soop")
+        self.d = description
         self.tz = int(self.d.get("time_zone", 9))
         # the tests' own SOOP: https://HOST/PATH -> TEST/soop/HOST/PATH
         self.test = os.environ.get("VTS_SOOP_URL", "")

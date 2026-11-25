@@ -133,16 +133,27 @@ vts 1.0.0
 Everything works.
 ```
 
-## Keeping up with YouTube
+## Keeping up to date
 
-YouTube changes its pages often. Where vts finds each piece of
-information is described in a data file, and once a day the app (or
-`vts check`) fetches the latest one from this repository, checks it, and
-keeps it only if it is complete and newer. Once a week it has yt-dlp
-update itself, when you installed yt-dlp yourself rather than through
-your system's packages. `vts update` (or "Update now" in the app's
-Settings) does both now; `updates = no` in the settings or `--offline`
-turns it off.
+Nothing to do by hand: vts keeps itself and what it uses up to date.
+
+- YouTube changes its pages often. Where vts finds each piece of
+  information is described in a data file, and once a day the app (or
+  `vts check`) fetches the latest one from this repository, checks it,
+  and keeps it only if it is complete and newer. Twitch's and SOOP's
+  descriptions (`twitch.json`, `soop.json`) are kept up to date the
+  same way.
+- Once a day the app asks GitHub whether there is a newer vts. If there
+  is, it is installed after you quit the app, in the background, and
+  the next start says so ("vts was updated").
+- Once a week, Streamlink is updated after you quit, and yt-dlp is told
+  to update itself when you installed it yourself rather than through
+  your system's packages.
+
+`vts update` (or "Update now" in the app's Settings) does it all now;
+`updates = no` in the settings or `--offline` turns it off. Only a vts
+installed from GitHub with pipx updates itself, not one run from its
+source.
 
 ## Install
 
@@ -156,8 +167,9 @@ doctor`:
 irm https://raw.githubusercontent.com/ifupauline/vts/main/install.ps1 | iex
 ```
 
-Then open a new window and type `vts`. The same line updates vts
-later. Windows Terminal is best: opened from one of its tabs, vts shows
+Then open a new window and type `vts`. vts then updates itself (see
+[Keeping up to date](#keeping-up-to-date)); the same line installs it
+again if something went wrong. Windows Terminal is best: opened from one of its tabs, vts shows
 the thumbnails as pictures (in a window started otherwise, as coloured
 blocks, or as pictures with `thumbnails` set to `sixel` in the app's
 Settings).
@@ -180,7 +192,9 @@ chmod +x ~/.local/bin/yt-dlp
 pipx install git+https://github.com/ifupauline/vts
 ```
 
-Then type `vts`. `pipx reinstall vts` gets a newer vts.
+Then type `vts`. vts then updates itself (see
+[Keeping up to date](#keeping-up-to-date)); `pipx reinstall vts` installs
+it again if something went wrong.
 
 ### Then
 
@@ -202,7 +216,8 @@ sends nothing anywhere: no account, no telemetry.
 | Settings (a text file) | `%APPDATA%\vts\config` |
 | Library: favourites, history, Watch later, playlists, recent searches, the list of downloads (SQLite) | `%LOCALAPPDATA%\vts\vts.db` (with `vts.db-wal` and `vts.db-shm`) |
 | The site you were on, for `start_site = last` | `%LOCALAPPDATA%\vts\last-site` |
-| Cache, safe to delete: thumbnails (`thumbs`), the latest rules (`rules.json`), YouTube's web client version (`client`), when updates last ran (`checked-*`), yt-dlp's version (`yt-dlp-version`), the app's log (`vts.log`), mpv's (`mpv.log`) and Streamlink's (`streamlink.log`) | `%LOCALAPPDATA%\vts\cache` |
+| vts updating itself: the newer version to install when you quit (`vts-pending`), the one installed (`vts-commit`), what happened, said at the next start (`self-update.json`) | `%LOCALAPPDATA%\vts` |
+| Cache, safe to delete: thumbnails (`thumbs`), the latest rules (`rules.json`) and descriptions of Twitch and SOOP (`twitch.json`, `soop.json`), YouTube's web client version (`client`), when updates last ran (`checked-*`), yt-dlp's version (`yt-dlp-version`), the app's log (`vts.log`), mpv's (`mpv.log`) and Streamlink's (`streamlink.log`) | `%LOCALAPPDATA%\vts\cache` |
 | Downloads and recordings of live streams | your Downloads folder, or the `downloads` setting |
 | The program | `%USERPROFILE%\.local\bin\vts.exe`, and its Python environment in pipx's folder (`py -m pipx environment` says where), Streamlink (for Twitch's and SOOP's live streams) inside it |
 | Check of new videos, only after `vts check --install` | a task named `vts-check` in Task Scheduler |
@@ -220,6 +235,7 @@ Nothing else: no service, nothing at startup.
 | Settings (a text file) | `~/.config/vts/config` |
 | Library (SQLite) | `~/.local/share/vts/vts.db` (with `vts.db-wal` and `vts.db-shm`) |
 | The site you were on, for `start_site = last` | `~/.local/share/vts/last-site` |
+| vts updating itself (the same files as on Windows) | `~/.local/share/vts` |
 | Cache, safe to delete (the same files as on Windows) | `~/.cache/vts` |
 | mpv's connection while a video plays, removed after | `$XDG_RUNTIME_DIR/vts` |
 | Downloads and recordings of live streams | `~/Downloads`, or the `downloads` setting |

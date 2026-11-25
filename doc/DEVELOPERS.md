@@ -73,7 +73,9 @@ The CI runs them on Linux and Windows, with Python 3.10 and 3.13.
 | `vts/notify.py`      | notifications: notify-send (with buttons), Windows' own |
 | `vts/player.py`      | mpv started and followed through its JSON IPC (a socket, a named pipe on Windows), yt-dlp for downloads and subtitles |
 | `vts/thumbs.py`      | thumbnails: downloaded in the background, cached, drawn for the terminal (blocks, sixels, kitty, iTerm2) |
-| `vts/update.py`      | updates of the rules and of yt-dlp, when due; whether playing can work |
+| `vts/update.py`      | updates of the rules, of Twitch's and SOOP's descriptions and of yt-dlp, when due; whether playing can work |
+| `vts/selfupdate.py`  | vts and Streamlink updated after the app quits: the latest commit on GitHub, the helper that runs pip |
+| `vts/sites/`         | Twitch (`twitch.py`, its public GraphQL, `vts/twitch.json`) and SOOP (`soop.py`, `vts/soop.json`): favourites' live status, search, channels, SOOP's past broadcasts |
 | `vts/config.py`      | the settings, what each one means, the settings file   |
 | `vts/http.py`        | HTTP: size limits, retries, parallel requests, no https to http |
 | `vts/text.py`        | cleaning text from YouTube before display, widths      |

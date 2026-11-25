@@ -123,6 +123,91 @@ def update_rules(current):
     return take_rules(r.body, current)
 
 
+# --- Twitch's and SOOP's descriptions (twitch.json, soop.json) -------------
+
+SITE_FILES = ("twitch", "soop")
+SITE_MAX = 64 * 1024
+
+
+def site_url(name):
+    """where the latest description of the site @name is"""
+    base = os.environ.get("VTS_BASE_URL", "")
+    if base.startswith(("https://", "http://")):
+        return f"{base}/{name}.json"
+    return RULES_URL.rsplit("/", 1)[0] + f"/{name}.json"
+
+
+def site_cache_path(name):
+    d = platform.cache_dir()
+    return os.path.join(d, f"{name}.json") if d else None
+
+
+def _site_loader(name):
+    if name == "twitch":
+        from vts.sites.twitch import load_description
+    else:
+        from vts.sites.soop import load_description
+    return load_description
+
+
+def best_site(name):
+    """the description of @name to use: the kept one if newer and good"""
+    load = _site_loader(name)
+    built = load()
+    try:
+        kept = load(site_cache_path(name))
+    except (OSError, ValueError, TypeError):
+        return built
+    return kept if kept.get("revision", 0) > built.get("revision", 0) \
+        else built
+
+
+def update_site(name):
+    """a newer description of @name from the repository, kept: its
+    revision, or None; UpdateError"""
+    url = site_url(name)
+    r = http.fetch(http.Request(url, max_size=SITE_MAX,
+                                timeout=RULES_TIMEOUT, retries=1))
+    if r.error:
+        raise UpdateError(r.message)
+    if r.status != 200:
+        raise UpdateError(f"{url}: HTTP {r.status}")
+    path = site_cache_path(name)
+    if not path:
+        raise UpdateError("no folder to keep it")
+    platform.mkdirs(os.path.dirname(path))
+    tmp = f"{path}.new"
+    try:
+        platform.write_atomic(tmp, r.body)
+        new = _site_loader(name)(tmp)
+        if new.get("revision", 0) <= best_site(name).get("revision", 0):
+            return None
+        os.replace(tmp, path)
+    except (OSError, ValueError, TypeError) as e:
+        raise UpdateError(f"{name}.json: {e}") from None
+    finally:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+    from vts import sites
+    sites.forget(name)
+    return new["revision"]
+
+
+def update_sites():
+    """the descriptions of Twitch and SOOP: {name: new revision or None, or
+    why it failed}"""
+    out = {}
+    for name in SITE_FILES:
+        try:
+            out[name] = update_site(name)
+        except UpdateError as e:
+            log.dbg(f"{name}.json update: {e}")
+            out[name] = str(e)
+    return out
+
+
 # --- now and then ------------------------------------------------------------
 
 def _stamp_path(what):
@@ -267,6 +352,9 @@ def upkeep(cfg, yt, quiet=False):
         except (UpdateError, BadRules) as e:
             log.dbg(f"rules update: {e}")
             done("rules")
+    if due("sites", RULES_EVERY):
+        update_sites()
+        done("sites")
     if due("yt-dlp", YTDLP_EVERY):
         try:
             ytdlp_update(cfg.downloader, background=True)

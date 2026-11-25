@@ -110,7 +110,10 @@ class Twitch(Site):
     name = "Twitch"
 
     def __init__(self, description=None):
-        self.d = description or load_description()
+        if description is None:
+            from vts import update
+            description = update.best_site("twitch")
+        self.d = description
         # the tests' own Twitch
         self.url = os.environ.get("VTS_TWITCH_URL") or self.d["url"]
 

@@ -227,9 +227,11 @@ Where the desktop allows it, each notification has buttons:
 and
 .BR "Watch later" .
 .TP
-.BR "update " [ \-\-rules | \-\-yt\-dlp ]
+.BR "update " [ \-\-rules | \-\-yt\-dlp | \-\-vts ]
 Update now what vts updates on its own (see
-.BR UPDATES ).
+.BR UPDATES ):
+the rules and the descriptions of Twitch and SOOP, yt\-dlp, or vts and
+Streamlink (installed in the background as the command ends).
 .TP
 .B doctor
 Try everything (settings, library, mpv, yt\-dlp and its age, deno,
@@ -408,7 +410,7 @@ How the app shows thumbnails: as the terminal's name says (auto, the
 default), in coloured blocks, or in one of the image formats.
 .TP
 .BR updates " = " yes | no
-Automatic updates of the rules and of yt\-dlp.
+Automatic updates of the rules, of yt\-dlp, Streamlink and vts itself.
 .TP
 .BR start_site " = " youtube | twitch | soop | last
 The site vts opens on; last: the one it was on when it quit.
@@ -428,8 +430,16 @@ fetch newer rules from vts' repository and keep them in
 .I ~/.cache/vts/rules.json
 if they are complete, newer and load without error; otherwise the
 built\-in rules stay in use.
-Once a week, yt\-dlp is told to update itself when you can replace it
-(installed by you, not by the system's packages).
+Twitch's and SOOP's descriptions
+.RI ( twitch.json ", " soop.json )
+are kept up to date the same way.
+Once a day the app asks GitHub for the latest vts; a newer one is
+installed by pip, in vts' own environment, after the app quits, and the
+next start says what happened.
+Only a vts installed from GitHub (with pipx) updates itself.
+Once a week, Streamlink is updated after the app quits, and yt\-dlp is
+told to update itself when you can replace it (installed by you, not by
+the system's packages).
 .SH FILES
 .TP
 .I ~/.config/vts/config
@@ -439,8 +449,13 @@ The settings.
 The library: favourites, seen videos, history, playlists, recent
 searches, downloads (SQLite).
 .TP
+.IR ~/.local/share/vts/vts\-pending ", " vts\-commit ", " self\-update.json
+vts updating itself: the newer version to install when the app quits,
+the one installed, and what happened (said at the next start).
+.TP
 .I ~/.cache/vts/
-The web client version, updated rules, thumbnails, the app's log
+The web client version, updated rules and descriptions of Twitch and
+SOOP, thumbnails, the app's log
 .RI ( vts.log )
 and mpv's
 .RI ( mpv.log ).

@@ -142,6 +142,11 @@ class SiteError(Exception):
 _made = {}
 
 
+def forget(key):
+    """@key's Site made again when next asked (a newer description)"""
+    _made.pop(key, None)
+
+
 def get(key):
     """the Site for @key (twitch or soop), made when first asked"""
     if key not in _made:
