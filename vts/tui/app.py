@@ -1497,9 +1497,7 @@ class App:
         elif key == "1":
             self.root(self.home_of(self.site))
         elif key == "2":
-            # Twitch's and SOOP's Homes are their favourites
-            self.root(S.favourites(self) if self.site == "youtube"
-                      else self.home_of(self.site))
+            self.root(S.favourites(self, self.site))
         elif key == "3":
             self.root(S.library(self))
         elif key == "4":

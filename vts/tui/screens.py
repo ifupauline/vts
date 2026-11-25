@@ -1007,11 +1007,16 @@ def library(app):
 
 
 class Favourites(Screen):
+    """the favourite channels of a site, in their groups"""
     hints = ("Enter channel  N add  n notifications  S Shorts  g group  "
              "- remove  i import  e export")
+    site_hints = "Enter channel  N add  g group  - remove  ? help"
 
-    def __init__(self):
+    def __init__(self, site="youtube"):
         super().__init__("Favourites")
+        self.site = site
+        if site != "youtube":
+            self.hints = self.site_hints
 
     def reload(self, app):
         self.items = []
@@ -1019,22 +1024,31 @@ class Favourites(Screen):
         self.done = True
         group = None
         try:
-            favs = app.lib.favs()
+            favs = app.lib.favs(self.site)
         except LibError as e:
             app.failed(e)
             return
+        yt = self.site == "youtube"
         for fv in favs:
             if group is None or group != fv.group:
                 self.labels[len(self.items)] = fv.group or "Favourites"
                 group = fv.group
             self.items.append(Item(
                 "channel", id=fv.id, title=fv.name, handle=fv.handle,
-                subscribers=("notified" if fv.notify else "not notified")
-                + ("" if fv.shorts else ", no Shorts")))
+                subscribers=(("notified" if fv.notify else "not notified")
+                             + ("" if fv.shorts else ", no Shorts"))
+                if yt else None))
 
     def header(self, app, y):
         if self.items:
             return y
+        if self.site != "youtube":
+            name = sites.NAMES[self.site]
+            D.text(y + 1, 2, f"No {name} favourites yet.", app.cols - 4,
+                   curses.A_BOLD)
+            D.text(y + 3, 2, f"N adds a {name} channel (its name or a link);"
+                   " / finds one, and f keeps it.", app.cols - 4)
+            return y + 5
         D.text(y + 1, 2, "No favourite channels yet.", app.cols - 4,
                curses.A_BOLD)
         D.text(y + 3, 2, "Search (/), open a channel, and press f to keep "
@@ -1045,9 +1059,13 @@ class Favourites(Screen):
 
     def key(self, app, key):
         it = self.selected()
+        yt = self.site == "youtube"
         if key in ("-", "DELETE", "f"):
             if it:
                 app.favourite(it["id"], it["title"])
+        elif not yt and key in ("n", "S", "e", "i"):
+            # YouTube's: notifications, Shorts, its files
+            return True
         elif key in ("n", "S"):
             fav = app.lib.fav(it["id"]) if it else None
             if fav:
@@ -1088,9 +1106,44 @@ class Favourites(Screen):
         return True
 
 
+    def add_site(self, app):
+        """a Twitch or SOOP channel named by its name, id or link; when
+        the name isn't exact, what it finds, to keep one with f"""
+        name = sites.NAMES[self.site]
+        ref = (app.prompt(f"Add the {name} channel (its name or a link)")
+               or "").strip()
+        if not ref:
+            return
+        site = sites.get(self.site)
+        ident = site.link(ref)
+        app.busy(f"Looking for {ref} on {name}...")
+        try:
+            if ident and sites.valid_channel_id(ident):
+                c, _ = site.channel(ident)
+            else:
+                found = [c for c in site.find(ref) if c.kind == "channel"]
+                c = found[0] if found and ref.lower() in (
+                    str(found[0]["handle"]).lower(),
+                    str(found[0]["title"]).lower()) else None
+                if c is None:
+                    app.push(site_search(app, self.site, ref))
+                    app.say(f"No {name} channel named exactly {ref}: f keeps "
+                            "one of these")
+                    return
+        except sites.SiteError as e:
+            app.failed(e)
+            return
+        if app.lib.fav(c["id"]):
+            app.say(f"{c['title']} is already a favourite")
+            return
+        app.favourite(c["id"], c["title"], c["handle"])
+
     def add(self, app):
         """a channel named by its @handle, id or link"""
         from vts.cli.library import add_favourite
+        if self.site != "youtube":
+            self.add_site(app)
+            return
         ref = app.prompt("Add the channel (@handle, link or id)")
         ref = (ref or "").strip()
         if not ref:
@@ -1128,8 +1181,8 @@ class Favourites(Screen):
         app.say(f"Favourites written to {name}")
 
 
-def favourites(app):
-    s = Favourites()
+def favourites(app, site="youtube"):
+    s = Favourites(site)
     s.reload(app)
     return s
 

@@ -126,6 +126,52 @@ def test_alt_digits(app):
     assert t.keys("\x1b3", "No SOOP favourites yet."), t.text()
 
 
+def test_site_favourites(app):
+    # 2 on Twitch and SOOP: their favourite channels, as on YouTube
+    t = app()
+    t.keys("b2", "No Twitch favourites yet.")
+    assert "› Favourites" in t.line(0), t.line(0)
+    # N adds one by its name, or by a link
+    t.keys("N", "Add the Twitch channel")
+    assert t.keys("esl_sc2\r", "ESL_SC2 is a favourite"), t.text()
+    t.keys("N", "Add the Twitch channel")
+    assert t.keys("https://www.twitch.tv/comebacktv\r",
+                  "ComeBackTV is a favourite"), t.text()
+    assert t.wait(lambda: "ComeBackTV" in t.text() and "ESL_SC2" in
+                  t.text() and "Favourites" in t.line(1)), t.text()
+    # the same again: said
+    t.keys("N", "Add the Twitch channel")
+    assert t.keys("esl_sc2\r", "ESL_SC2 is already a favourite"), t.text()
+    # a group (on ComeBackTV, the first): it goes under it, last
+    t.keys("g", "Group")
+    t.keys("StarCraft\r", None, 0.3)
+    assert t.wait(lambda: "StarCraft" in t.text() and
+                  t.text().index("ESL_SC2") < t.text().index("ComeBackTV")), \
+        t.text()
+    # Enter: the channel's page
+    t.keys("G\r", None, 0.5)
+    assert t.wait(lambda: "comebacktv · 27,541 followers" in t.text()), \
+        t.text()
+    # - removes (after asking)
+    t.keys("2", "› Favourites")
+    t.keys("G-", "Remove")
+    t.keys("j\r", None, 0.5)
+    assert t.wait(lambda: "ComeBackTV" not in t.text()), t.text()
+    assert "ESL_SC2" in t.text()
+    # SOOP: a name that isn't exact shows what it finds
+    t.keys("\x1b3", None, 0.3)
+    t.keys("2", "No SOOP favourites yet.")
+    t.keys("N", "Add the SOOP channel")
+    assert t.keys("김정우\r", "f keeps one of these"), t.text()
+    assert t.wait(lambda: "effort김정우" in t.line(1)), t.text()
+    t.keys("2", "No SOOP favourites yet.")
+    # by its id
+    t.keys("N", "Add the SOOP channel")
+    assert t.keys("momo130\r", "is a favourite"), t.text()
+    assert t.wait(lambda: "effort김정우" in t.text() and "momo130" in
+                  t.text()), t.text()
+
+
 def test_start_site(app):
     with open(app.conf, "a") as f:
         f.write("start_site = last\n")

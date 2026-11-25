@@ -76,7 +76,7 @@ In the app, `?` shows the keys. The main ones:
 | `,` `.` `9` `0` `m` | while playing: back, forward 10 s, volume, mute   |
 | `T` `V`             | while playing: a chapter, go on in another quality |
 | `-`                 | remove from a list, the history, the favourites   |
-| `N` `i` `e`         | on Favourites: add a channel (@handle or link), import, export |
+| `N` `i` `e`         | on Favourites (each site has its own): add a channel (@handle, name or link), import, export |
 | `q`                 | back, and quit from a section                     |
 
 The mouse works too: click to select, double-click to open, the wheel to

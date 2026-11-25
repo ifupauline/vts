@@ -47,7 +47,9 @@ keys; `q` goes back, and quits from one of the four sections:
 - `2` **Favourites**: your channels. `N` adds one by its @handle or link,
   `n` turns its notifications on or off, `S` whether its Shorts count,
   `g` puts it in a group, `i` imports a subscriptions file and `e`
-  exports them (OPML, or CSV when the name ends in `.csv`).
+  exports them (OPML, or CSV when the name ends in `.csv`). On Twitch and
+  SOOP, `2` is their favourite channels the same way: `N` adds one by its
+  name or link, `g` groups it, `-` removes it, Enter opens its page.
 - `3` **Library**: Watch later, your own playlists, your downloads and
   the history.
 - `4` **Settings**: each setting with what it does and the values it
