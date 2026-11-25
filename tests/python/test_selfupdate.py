@@ -82,7 +82,7 @@ def test_site_description_older_or_bad(home, youtube):
     assert isinstance(why, str) and "soop.json" in why
     # the one built in still used, nothing left behind
     assert update.best_site("soop") == built
-    cache = os.listdir(home / "cache" / "vts")
+    cache = os.listdir(selfupdate.platform.cache_dir())
     assert not [n for n in cache if n.startswith("soop.json")], cache
 
 
