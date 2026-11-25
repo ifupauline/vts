@@ -136,8 +136,9 @@ def test_twitch(app):
     # finding a channel by its name: the one named so first, live
     t.keys("/", "Find a Twitch channel")
     assert t.keys("esl_sc2\r", "Find: esl_sc2"), t.text()
-    assert t.wait(lambda: t.line(1).startswith("▌ LIVE  ESL_SC2")), t.text()
-    assert "StarCraft II" in t.line(2) and "watching" in t.line(2), t.line(2)
+    assert t.wait(lambda: t.line(1).startswith("▌ LIVE  ESL_SC2") and
+                  "StarCraft II" in t.line(2) and "watching" in t.line(2)), \
+        t.text()
     assert t.keys("f", "ESL_SC2 is a favourite, on Twitch's Home"), t.text()
     # a link opens its channel, from any site
     t.keys("b", "No SOOP favourites yet.")
@@ -149,7 +150,8 @@ def test_twitch(app):
     t.keys("f", "ComeBackTV is a favourite")
     # Home: live ones first, the others greyed
     t.keys("1", "Live now")
-    assert t.wait(lambda: "Offline" in t.text()), t.text()
+    assert t.wait(lambda: "Offline" in t.text() and "619 watching" in
+                  t.text() and "· offline" in t.text()), t.text()
     lines = t.text().split("\n")
     live = next(i for i, ln in enumerate(lines) if "Live now" in ln)
     off = next(i for i, ln in enumerate(lines) if ln.strip() == "Offline")
