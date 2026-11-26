@@ -385,6 +385,9 @@ class App:
                          if "offline" in it.f else None)
         if it.kind == "channel":
             return parts("channel", it["handle"], it["subscribers"])
+        if it.kind == "category":
+            return parts("category", it["views"], "on Home"
+                         if self.category_kept(it) else None)
         if it.kind == "playlist":
             return parts("playlist", it["videos"], it["channel"])
         if it.kind in ("setting", "doctor", "download", "action"):
@@ -814,7 +817,9 @@ class App:
             return
         site = sites.site_of(it["id"])
         if site != "youtube":
-            if it.kind == "channel":
+            if it.kind == "category":
+                self.push(S.site_category(self, it["id"], it["title"]))
+            elif it.kind == "channel":
                 self.push(S.site_channel(self, it["id"]))
             elif sites.is_live(it["id"]):
                 self.play_live(it)
@@ -1437,6 +1442,56 @@ class App:
             else:
                 self.failed(e)
 
+    # --- the categories kept on a site's Home (a setting) ------------------
+
+    def kept_categories(self, site):
+        return config.parse_categories(getattr(self.cfg,
+                                               f"{site}_categories", ""))
+
+    def category_kept(self, it):
+        site, _, code = sites.split(it["id"])
+        return any(c == code for c, _ in self.kept_categories(site))
+
+    def keep_category(self, it):
+        """f on a category: on its site's Home, or off it"""
+        if not it or not sites.valid_category_id(it["id"]):
+            return
+        site, _, code = sites.split(it["id"])
+        cats = self.kept_categories(site)
+        name = it["title"] or code
+        if any(c == code for c, _ in cats):
+            if not self.confirm(f"Take {name} off {sites.NAMES[site]}'s "
+                                "Home?"):
+                return
+            cats = [(c, n) for c, n in cats if c != code]
+            said = f"{name} is off {sites.NAMES[site]}'s Home"
+        else:
+            cats.append((code, name))
+            said = f"{name} is on {sites.NAMES[site]}'s Home"
+        if self.save_setting(f"{site}.categories",
+                             config.format_categories(cats)):
+            self.say(said)
+
+    def save_setting(self, key, value):
+        """@key = @value, now and in the settings file: whether it went"""
+        path = config.default_path(self.cfg)
+        if not path:
+            self.say("no home folder: nowhere to keep the settings", True)
+            return False
+        attr = config.setting(key).attr
+        old = getattr(self.cfg, attr)
+        try:
+            self.cfg.set(key, value)
+            config.edit_file(path, key, self.cfg.get(key) or None)
+        except config.BadValue as e:
+            self.say(f"{key}: {e}", True)
+            return False
+        except OSError as e:
+            setattr(self.cfg, attr, old)
+            self.say(f"{path}: {e.strerror}", True)
+            return False
+        return True
+
     def favourite(self, channel_id, name, handle=None):
         if not sites.valid_channel_id(channel_id):
             self.say("no channel to keep", True)
@@ -1517,6 +1572,8 @@ class App:
             elif it and it.kind != "channel" and sites.valid_channel_id(
                     it["channel_id"]):
                 self.push(S.site_channel(self, it["channel_id"]))
+        elif key == "f" and it and it.kind == "category":
+            self.keep_category(it)
         elif key == "f":
             if it and it.kind == "channel":
                 self.favourite(it["id"], it["title"], it["handle"])

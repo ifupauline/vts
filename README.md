@@ -32,9 +32,10 @@ browsing.
 - **Twitch and SOOP too.** `b` goes to Twitch (in purple), then to SOOP
   (in blue), or Alt+1, Alt+2, Alt+3 straight to YouTube, Twitch, SOOP: your favourite channels, those live first, played in mpv
   without Twitch's ads (through Streamlink, which comes with vts), in the
-  quality you choose, and recorded to a file if you want. On SOOP, each
-  channel's past broadcasts too, resumed where you stopped. No account
-  either.
+  quality you choose, and recorded to a file if you want. Categories
+  (StarCraft, 스타크래프트...) list everyone live in them, the most watched
+  first. On SOOP, each channel's past broadcasts too, resumed where you
+  stopped. No account either.
 - **Your library, on your computer.** History, Watch later and your own
   playlists, never sent anywhere.
 - **Thumbnails in the terminal,** as pictures where the terminal can show

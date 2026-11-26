@@ -394,5 +394,5 @@ def test_site_settings():
         with pytest.raises(config.BadValue):
             c.set(key, bad)
     assert [s.section for s in config.SETTINGS if s.key.startswith(
-        ("twitch.", "soop."))] == ["Twitch", "Twitch", "SOOP", "SOOP"]
+        ("twitch.", "soop."))] == ["Twitch"] * 4 + ["SOOP"] * 3
     assert {s.section for s in config.SETTINGS} == set(config.SECTIONS)

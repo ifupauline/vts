@@ -73,6 +73,15 @@ come back to it, and with `r`. `/` finds a channel by its name (or opens
 a link to it, `https://www.twitch.tv/...`, typed on any site); Enter
 shows a channel, `f` keeps it, `-` (or `f` again) lets it go.
 
+`/` also finds **categories** (games: `starcraft`), listed before the
+channels, the most watched first. Enter on one lists everyone live in
+it, the most watched first, more as you go down; `f` on a category (or
+`F` on its list) keeps it at the bottom of the site's Home, `-` there
+lets it go. They are kept in the `twitch.categories` setting, and
+`twitch.languages = en,ko` keeps a category's list to streams in these
+languages. SOOP's categories work the same way (`/ 스타`, kept in
+`soop.categories`).
+
 ![Twitch's Home: favourites live now, then the others](screenshots/twitch.svg)
 
 **SOOP** (sooplive.co.kr) works the same way, with the past broadcasts
@@ -317,6 +326,9 @@ updates = yes
 | `start_site` | youtube, twitch, soop, last (the one you quit on) | youtube |
 | `twitch.quality` | best, 1080, 720, 480, 360, 160, audio | best |
 | `twitch.low_latency` | yes, no: a few seconds closer to live | no |
+| `twitch.categories` | the categories on Twitch's Home (`f` on one keeps it) | none |
+| `twitch.languages` | languages of a category's streams: `en,ko`, or nothing for all | all |
+| `soop.categories` | the categories on SOOP's Home | none |
 | `soop.quality` | best, 1080, 720, 540, 360, audio: live streams | best |
 | `soop.vod_quality` | the same: past broadcasts | best |
 

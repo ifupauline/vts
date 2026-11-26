@@ -155,9 +155,15 @@ class SiteHome(Screen):
         except LibError as e:
             app.failed(e)
             favs = []
+        cats = [Item("category", id=sites.category_id(self.site, code),
+                     title=name)
+                for code, name in app.kept_categories(self.site)]
         # an empty Home says why in its header, not "Nothing here"
-        self.done = bool(favs)
+        self.done = bool(favs or cats)
         if not favs:
+            if cats:
+                self.labels[0] = "Categories"
+                self.items = cats
             return
         name = sites.NAMES[self.site]
         app.busy(f"Who is live on {name}...")
@@ -186,6 +192,9 @@ class SiteHome(Screen):
         if cont:
             self.labels[len(self.items)] = "Continue watching"
             self.items += cont
+        if cats:
+            self.labels[len(self.items)] = "Categories"
+            self.items += cats
         if offline:
             self.labels[len(self.items)] = (
                 "Offline" if not self.failed else
@@ -215,6 +224,12 @@ class SiteHome(Screen):
 
     def key(self, app, key):
         it = self.selected()
+        if key in ("-", "DELETE", "f") and it is not None and \
+                it.kind == "category":
+            app.keep_category(it)
+            self.load(app)
+            self.sel = min(self.sel, max(0, len(self.items) - 1))
+            return True
         if key in ("-", "DELETE", "f") and it is not None and (
                 it.kind == "channel" or sites.is_live(it["id"])):
             ident = it["id"] if it.kind == "channel" else it["channel_id"]
@@ -230,8 +245,8 @@ class SiteHome(Screen):
         name = sites.NAMES[self.site]
         D.text(y + 1, 2, f"No {name} favourites yet.", app.cols - 4,
                curses.A_BOLD)
-        D.text(y + 3, 2, f"/ finds a {name} channel by its name (or a "
-               "link to it), and f keeps it.", app.cols - 4)
+        D.text(y + 3, 2, f"/ finds a {name} channel or category by its "
+               "name (or a link to it), and f keeps it.", app.cols - 4)
         D.text(y + 4, 2, "b goes to the next site (Alt+1 YouTube, Alt+2 "
                "Twitch, Alt+3 SOOP).", app.cols - 4)
         return y + 6
@@ -254,20 +269,106 @@ class SiteSearch(Screen):
 
     def reload(self, app):
         app.busy(f"Looking for {self.query} on {sites.NAMES[self.site]}...")
+        site = sites.get(self.site)
+        self.labels = {}
         try:
-            self.items = sites.get(self.site).find(self.query)
+            channels = site.find(self.query)
         except sites.SiteError as e:
             app.failed(e)
-            self.items = []
+            channels = []
+        try:
+            cats = site.categories(self.query)[:CATEGORIES_FOUND]
+        except sites.SiteError:
+            cats = []
+        self.items = cats + channels
+        if cats:
+            self.labels[0] = "Categories"
+            self.labels[len(cats)] = "Channels"
 
     def header(self, app, y):
         if self.items:
             return y
-        D.text(y + 1, 2, f"No {sites.NAMES[self.site]} channel found for "
-               f"{self.query}.", app.cols - 4, curses.A_BOLD)
+        D.text(y + 1, 2, f"No {sites.NAMES[self.site]} channel or category "
+               f"found for {self.query}.", app.cols - 4, curses.A_BOLD)
         D.text(y + 2, 2, "Its exact name, or a link to it, finds it.",
                app.cols - 4)
         return y + 4
+
+
+CATEGORIES_FOUND = 5  # in a search, before the channels
+
+
+class SiteCategory(Screen):
+    """the live streams in a category of Twitch or SOOP, the most watched
+    first, more as the list goes down"""
+    hints = ("Enter play  Q quality  d record  c channel  f favourite  F "
+             "on Home  ? help")
+
+    def __init__(self, ident, name):
+        super().__init__(name or ident)
+        self.ident = ident
+        self.name = name or ident
+        self.site = sites.site_of(ident)
+        self.next = None
+
+    def languages(self, app):
+        if self.site != "twitch":
+            return ()
+        return [x for x in app.cfg.twitch_languages.split(",") if x]
+
+    def reload(self, app):
+        app.busy(f"Live in {self.name}...")
+        try:
+            p = sites.get(self.site).category(self.ident, None,
+                                              self.languages(app))
+        except sites.SiteError as e:
+            app.failed(e)
+            return False
+        self.items = p.items
+        self.next = p.continuation
+        self.done = not self.next
+        return True
+
+    def more(self, app):
+        if not self.next:
+            return False
+        try:
+            p = sites.get(self.site).category(self.ident, self.next,
+                                              self.languages(app))
+        except sites.SiteError as e:
+            app.failed(e)
+            return True
+        seen = {it["id"] for it in self.items}
+        self.items += [it for it in p.items if it["id"] not in seen]
+        self.next = p.continuation
+        return bool(self.next)
+
+    def key(self, app, key):
+        if key == "F":
+            app.keep_category(Item("category", id=self.ident,
+                                   title=self.name))
+            return True
+        return False
+
+    def header(self, app, y):
+        D.text(y, 1, self.name, app.cols - 2, curses.A_BOLD)
+        langs = self.languages(app)
+        kept = app.category_kept(Item("category", id=self.ident))
+        D.text(y + 1, 1, " · ".join(x for x in (
+            "live now, the most watched first",
+            "in " + ", ".join(langs) if langs else None,
+            "on Home" if kept else "F keeps it on Home") if x),
+            app.cols - 2, D.pair(D.C_DIM))
+        if not self.items:
+            D.text(y + 3, 1, "Nobody is live in it right now.",
+                   app.cols - 2, curses.A_BOLD)
+            return y + 5
+        return y + 3
+
+
+def site_category(app, ident, name):
+    s = SiteCategory(ident, name)
+    return s if s.reload(app) else None
 
 
 def site_search(app, site, query):

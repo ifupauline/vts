@@ -315,6 +315,59 @@
         "hl": "en"
       },
       "file": "channel-podcasts.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "query": "starcraft"
+      },
+      "file": "twitch-starcraft.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "id": "11989",
+        "after": "eyJzIjoxNC41ODk1OTAwMTY4ODk3NTcsImQiOmZhbHNlLCJ0Ijp0cnVlfQ=="
+      },
+      "file": "twitch-category-11989-2.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "id": "11989",
+        "languages": [
+          "EN"
+        ]
+      },
+      "file": "twitch-category-11989-en.json"
+    },
+    {
+      "endpoint": "twitch",
+      "match": {
+        "id": "11989"
+      },
+      "file": "twitch-category-11989.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "sch.sooplive.co.kr/api.php?m=categoryList&szKeyword=%EC%8A%A4%ED%83%80&szOrder=view_cnt&nPageNo=1&nListCnt=20&szPlatform=pc"
+      },
+      "file": "soop-categories-star.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "sch.sooplive.co.kr/api.php?m=categoryContentsList&szType=live&nPageNo=1&nListCnt=30&szPlatform=pc&szOrder=view_cnt_desc&szCateNo=00040001"
+      },
+      "file": "soop-category-00040001-1.json"
+    },
+    {
+      "endpoint": "soop",
+      "match": {
+        "path": "sch.sooplive.co.kr/api.php?m=categoryContentsList&szType=live&nPageNo=2&nListCnt=30&szPlatform=pc&szOrder=view_cnt_desc&szCateNo=00040001"
+      },
+      "file": "soop-category-00040001-2.json"
     }
   ]
 }

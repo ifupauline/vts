@@ -1,11 +1,13 @@
 {
   "about": "How vts asks Twitch for channels and their live streams (Twitch's public GraphQL interface, as its website does). Updated with youtube.json: bump revision (YYYYMMDDNN) when changing it.",
-  "revision": 2026112501,
+  "revision": 2026112601,
   "url": "https://gql.twitch.tv/gql",
   "client_id": "kimne78kx3ncx6brgo4mv6wki5h1ko",
   "queries": {
     "users": "query($logins:[String!]){users(logins:$logins){login displayName description profileImageURL(width:150) followers{totalCount} stream{title viewersCount createdAt type game{displayName} previewImageURL(width:440,height:248)}}}",
-    "search": "query($query:String!){searchUsers(userQuery:$query,first:20){edges{node{login displayName description profileImageURL(width:150) followers{totalCount} stream{title viewersCount createdAt type game{displayName} previewImageURL(width:440,height:248)}}}}}"
+    "search": "query($query:String!){searchUsers(userQuery:$query,first:20){edges{node{login displayName description profileImageURL(width:150) followers{totalCount} stream{title viewersCount createdAt type game{displayName} previewImageURL(width:440,height:248)}}}}}",
+    "categories": "query($query:String!){searchCategories(query:$query,first:20){edges{node{id displayName viewersCount boxArtURL(width:144,height:192)}}}}",
+    "category": "query($id:ID!,$languages:[String!],$after:Cursor){game(id:$id){id displayName streams(first:30,after:$after,options:{sort:VIEWER_COUNT,languages:$languages}){edges{cursor node{title viewersCount createdAt type broadcaster{login displayName} previewImageURL(width:440,height:248)}} pageInfo{hasNextPage}}}}"
   },
   "max_logins": 100
 }

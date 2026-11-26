@@ -296,6 +296,13 @@ def check_twitch(vts, env):
     got = streams(env, tw.stream_url(live))
     if "best" not in got:
         raise AssertionError(f"Streamlink: no best in {sorted(got)}")
+    # categories: StarCraft found, its live streams listed
+    cats = tw.categories("starcraft")
+    at_least(cats, 2, "categories")
+    has(cats[0], "id", "title", "views")
+    p = tw.category(cats[0]["id"])
+    at_least(p.items, 1, f"live streams in {cats[0]['title']}")
+    has(p.items[0], "id", "title", "channel", "views", "game")
 
 
 def check_soop(vts, env):
@@ -329,6 +336,15 @@ def check_soop(vts, env):
     at_least(on, 1, "live channels")
     has(on[0][1], "id", "title", "channel", "views", "thumbnail")
     streams(env, sites.live_url(on[0][1]["id"]))
+    # categories: 스타크래프트, its live streams, two pages
+    cats = so.categories("스타")
+    at_least(cats, 1, "categories")
+    p = so.category(cats[0]["id"])
+    at_least(p.items, 5, f"live streams in {cats[0]['title']}")
+    has(p.items[0], "id", "title", "channel", "views", "published")
+    if p.continuation:
+        at_least(so.category(cats[0]["id"], p.continuation).items, 1,
+                 "live streams on the next page")
 
 
 CHECKS = [check_search, check_filters, check_video, check_chapters,

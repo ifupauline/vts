@@ -203,6 +203,58 @@ def test_dislikes(app):
     assert t.wait(lambda: " likes · 412K dislikes" in t.text()), t.text()
 
 
+def test_categories(app):
+    t = app()
+    t.keys("b", "No Twitch favourites yet.")
+    # / finds categories (the most watched first) and channels
+    t.keys("/", "Find a Twitch channel")
+    assert t.keys("starcraft\r", "Find: starcraft"), t.text()
+    assert t.wait(lambda: "Categories" in t.text() and "Channels" in
+                  t.text()), t.text()
+    # f keeps StarCraft (the 2nd) on Home, in the settings
+    t.keys("j", None, 0.2)
+    assert t.keys("f", "StarCraft is on Twitch's Home"), t.text()
+    with open(app.conf) as f:
+        assert "twitch.categories = 11989 StarCraft\n" in f.read()
+    t.keys("1", None, 0.3)
+    assert t.wait(lambda: "Categories" in t.text() and "StarCraft" in
+                  t.text()), t.text()
+    # Enter: its live streams, more as the list goes down
+    t.keys("\r", None, 0.3)
+    assert t.wait(lambda: "live now, the most watched first · on Home" in
+                  t.text() and "dewalttv" in t.text()), t.text()
+    t.keys("G", None, 0.5)
+    assert t.wait(lambda: "plokch" in t.text().lower()), t.text()
+    # Twitch's languages
+    t.keys("q", None, 0.5)
+    with open(app.conf, "a") as f:
+        f.write("twitch.languages = en\n")
+    t = app()
+    t.keys("b", None, 0.3)
+    assert t.wait(lambda: "StarCraft" in t.text()), t.text()
+    t.keys("\r", None, 0.3)
+    assert t.wait(lambda: "· in en ·" in t.text() and "Jumperer" in
+                  t.text() and "dewalttv" not in t.text()), t.text()
+    # - on Home takes it off (after asking)
+    t.keys("1", None, 0.3)
+    assert t.wait(lambda: "› Home" in t.line(0)), t.text()
+    t.keys("-", "Take StarCraft off")
+    t.keys("j\r", None, 0.5)
+    assert t.wait(lambda: "StarCraft" not in t.text()), t.text()
+    with open(app.conf) as f:
+        assert "twitch.categories" not in f.read()
+    # SOOP: the same, F on the list keeps it
+    t.keys("b", "No SOOP favourites yet.")
+    t.keys("/", "Find a SOOP channel")
+    assert t.keys("스타\r", "Find: 스타"), t.text()
+    assert t.wait(lambda: "스타크래프트" in t.text()), t.text()
+    t.keys("\r", None, 0.3)
+    assert t.wait(lambda: "F keeps it on Home" in t.text()), t.text()
+    assert t.keys("F", "is on SOOP's Home"), t.text()
+    with open(app.conf) as f:
+        assert "soop.categories = 00040001 스타크래프트\n" in f.read()
+
+
 def test_start_site(app):
     with open(app.conf, "a") as f:
         f.write("start_site = last\n")

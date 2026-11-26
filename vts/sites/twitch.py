@@ -12,8 +12,9 @@ import os
 import urllib.parse
 
 from vts import http
-from vts.rules import Item
-from vts.sites import Site, SiteError, channel_id, live_id, twitch_login
+from vts.rules import Item, Page
+from vts.sites import (Site, SiteError, category_id, channel_id, live_id,
+                       split, twitch_login, valid_category_id)
 from vts.text import clean
 
 DESC_MAX = 64 * 1024
@@ -201,6 +202,50 @@ class Twitch(Site):
                 out[it["channel_id"]] = it
         return out
 
+    def categories(self, query):
+        a = self._ask("categories", {"query": query.strip()[:100]})
+        out = []
+        for e in ((a.get("searchCategories") or {}).get("edges") or ()):
+            n = e.get("node") if isinstance(e, dict) else None
+            if not isinstance(n, dict) or not str(n.get("id", "")).isdigit():
+                continue
+            out.append(Item(
+                "category", id=category_id("twitch", n["id"]),
+                title=clean(n.get("displayName") or n["id"]),
+                views=_count(n.get("viewersCount"), "watching"),
+                thumbnail=_https(n.get("boxArtURL"))))
+        # the one watched most first: "StarCraft" is two, one of them empty
+        out.sort(key=lambda it: -_viewers(it["views"]))
+        return out
+
+    def category(self, ident, after=None, languages=()):
+        if not valid_category_id(ident):
+            raise SiteError(f"not a Twitch category: {ident}")
+        v = {"id": split(ident)[2], "after": after,
+             "languages": [x.upper() for x in languages] or None}
+        g = self._ask("category", v).get("game")
+        if not isinstance(g, dict):
+            raise SiteError("no such Twitch category")
+        page = Page()
+        streams = g.get("streams") or {}
+        cursor = None
+        for e in streams.get("edges") or ():
+            n = e.get("node") if isinstance(e, dict) else None
+            if not isinstance(n, dict):
+                continue
+            cursor = e.get("cursor") or cursor
+            b = n.get("broadcaster") or {}
+            it = live_item({"login": b.get("login"),
+                            "displayName": b.get("displayName"),
+                            "stream": dict(n, game={"displayName": g.get(
+                                "displayName")})})
+            if it:
+                page.add(it)
+        more = (streams.get("pageInfo") or {}).get("hasNextPage")
+        page.continuation = cursor if more and isinstance(cursor, str) \
+            else None
+        return page
+
     def link(self, text):
         """the channel a twitch.tv link names: twitch:LOGIN, or None"""
         t = text.strip()
@@ -220,3 +265,8 @@ class Twitch(Site):
     def stream_url(self, it):
         from vts.sites import live_url
         return live_url(it["id"])
+
+
+def _viewers(views):
+    digits = "".join(c for c in str(views or "") if c.isdigit())
+    return int(digits) if digits else -1

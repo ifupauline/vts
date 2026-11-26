@@ -452,6 +452,16 @@ The site vts opens on; last: the one it was on when it quit.
 .BR twitch.quality " = " best | 1080 | 720 | 480 | 360 | 160 | audio
 The quality of Twitch's live streams.
 .TP
+.BI twitch.categories ", " soop.categories " = number name, ..."
+The categories (games) kept on the site's Home:
+.B f
+on one found with
+.B /
+keeps it; Enter lists everyone live in it.
+.TP
+.BI twitch.languages " = en,ko"
+The languages of the streams a Twitch category lists (all by default).
+.TP
 .BR twitch.low_latency " = " yes | no
 Twitch's live streams a few seconds closer to live (Streamlink's
 low\-latency mode); they may pause more on a slow connection.

@@ -107,6 +107,40 @@ def check_channel_tabs(v):
     return ",".join(t for t in CHANNEL_TABS if t in want)
 
 
+def parse_categories(v):
+    """ "11989 StarCraft, 490422 StarCraft II" -> [("11989", "StarCraft"),
+    ...]: the categories kept on a site's Home, their number and name"""
+    out = []
+    for part in (v or "").split(","):
+        code, _, name = part.strip().partition(" ")
+        if code:
+            out.append((code, " ".join(name.split()) or code))
+    return out
+
+
+def format_categories(cats):
+    return ", ".join(f"{code} {name.replace(',', ' ')}"
+                     for code, name in cats)
+
+
+def check_categories(v):
+    cats = parse_categories(v)
+    if any(not code.isdigit() or len(code) > 20 for code, _ in cats):
+        raise BadValue("expected NUMBER NAME, with commas (f on a category "
+                       "keeps it)")
+    return format_categories(cats)
+
+
+def check_languages(v):
+    """ "en,ko": languages as two letters, or nothing for all"""
+    langs = [x.strip().lower() for x in v.split(",") if x.strip()]
+    if any(len(x) != 2 or not x.isalpha() or not x.isascii()
+           for x in langs):
+        raise BadValue("expected languages of two letters like en,ko, or "
+                       "nothing for all")
+    return ",".join(langs)
+
+
 def check_bool(v):
     b = util.parse_bool(v)
     if b is None:
@@ -273,6 +307,20 @@ SETTINGS = (
             "(Streamlink's low-latency mode, mpv's low-latency profile). "
             "The stream may pause more often on a slow connection.",
             ["yes", "no"], "Twitch"),
+    Setting("twitch.categories", check_categories,
+            "NUMBER NAME, with commas (f on a category keeps it)",
+            "none", "The categories (games) on Twitch's Home: Enter lists "
+            "their live streams, the most watched first. / finds one, f "
+            "keeps it, - on Home lets it go.", None, "Twitch"),
+    Setting("twitch.languages", check_languages,
+            "languages of two letters: en,ko, or nothing", "nothing: all",
+            "The languages of the live streams a category lists.", None,
+            "Twitch"),
+    Setting("soop.categories", check_categories,
+            "NUMBER NAME, with commas (f on a category keeps it)",
+            "none", "The categories on SOOP's Home (스타크래프트...): Enter "
+            "lists their live streams, the most watched first. / finds "
+            "one, f keeps it, - on Home lets it go.", None, "SOOP"),
     Setting("soop.quality", _one_of(SOOP_QUALITIES),
             "best, 1080, 720, 540, 360 or audio", "best",
             "The quality SOOP's live streams play in (p plays in it, Q "
@@ -313,6 +361,9 @@ class Config:
         self.start_site = "youtube"
         self.twitch_quality = "best"
         self.twitch_low_latency = False
+        self.twitch_categories = ""
+        self.twitch_languages = ""
+        self.soop_categories = ""
         self.soop_quality = "best"
         self.soop_vod_quality = "best"
         # from the command line

@@ -214,3 +214,48 @@ def test_soop_description():
     assert d["user_agent"].startswith("Mozilla/") and d["revision"] > 2026e6
     for k in ("search", "station", "past", "live_thumbnail"):
         assert d[k].startswith("https://")
+
+
+def test_twitch_categories(twitch):
+    cats = twitch.categories("starcraft")
+    # the most watched first; one "StarCraft" is empty
+    assert [c["id"] for c in cats[:2]] == ["twitch:cat:490422",
+                                            "twitch:cat:11989"]
+    assert cats[1]["title"] == "StarCraft" and cats[1].kind == "category"
+    assert cats[1]["views"].endswith(" watching")
+    assert all(sites.valid_category_id(c["id"]) for c in cats)
+    p = twitch.category("twitch:cat:11989")
+    assert len(p.items) == 3 and p.continuation
+    first = p.items[0]
+    assert first["id"] == "twitch:live:dewalttv" and "live" in first.f
+    assert first["game"] == "StarCraft" and first["channel_id"] == \
+        "twitch:dewalttv"
+    more = twitch.category("twitch:cat:11989", p.continuation)
+    assert [it["id"] for it in more.items] == ["twitch:live:iopg",
+                                               "twitch:live:plokch"]
+    assert more.continuation is None
+    en = twitch.category("twitch:cat:11989", languages=["en"])
+    assert [it["channel"] for it in en.items][:1] == ["Jumperer"]
+    with pytest.raises(sites.SiteError):
+        twitch.category("twitch:cat:nope")
+
+
+def test_soop_categories(soop):
+    cats = soop.categories("스타")
+    assert cats[0]["id"] == "soop:cat:00040001" and cats[0]["title"] == \
+        "스타크래프트"
+    p = soop.category(cats[0]["id"])
+    assert [it["id"] for it in p.items][:1] == ["soop:live:brainzerg7"]
+    assert p.items[0]["views"].endswith(" watching") and \
+        p.items[0]["published"].startswith("on for ")
+    assert p.continuation == "2"
+    more = soop.category(cats[0]["id"], p.continuation)
+    assert len(more.items) == 4 and more.continuation is None
+    assert not {it["id"] for it in p.items} & {it["id"] for it in more.items}
+
+
+def test_category_ids():
+    assert sites.valid_category_id("soop:cat:00040001")
+    for bad in ("youtube:cat:1", "twitch:cat:", "twitch:cat:12a",
+                "twitch:11989", "soop:vod:1", None):
+        assert not sites.valid_category_id(bad)

@@ -1,0 +1,57 @@
+{
+ "data": {
+  "game": {
+   "id": "11989",
+   "displayName": "StarCraft",
+   "streams": {
+    "edges": [
+     {
+      "cursor": "eyJzIjo3Ni41NDMyOTg4NDI5Nzc1NiwiZCI6ZmFsc2UsInQiOnRydWV9",
+      "node": {
+       "title": "Дневной StarCraft!",
+       "viewersCount": 76,
+       "createdAt": "2026-11-26T06:47:34Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "dewalttv",
+        "displayName": "dewalttv"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_dewalttv-440x248.jpg"
+      }
+     },
+     {
+      "cursor": "eyJzIjoxOC43MzY4MTAxNjYwOTQ2NDIsImQiOmZhbHNlLCJ0Ijp0cnVlfQ==",
+      "node": {
+       "title": "make arbiters great again",
+       "viewersCount": 18,
+       "createdAt": "2026-11-26T05:46:52Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "jumperer",
+        "displayName": "Jumperer"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_jumperer-440x248.jpg"
+      }
+     },
+     {
+      "cursor": "eyJzIjoxNC41ODk1OTAwMTY4ODk3NTcsImQiOmZhbHNlLCJ0Ijp0cnVlfQ==",
+      "node": {
+       "title": "Enfrento a Ultra y a Conan en el Torneo Sector 591",
+       "viewersCount": 14,
+       "createdAt": "2026-11-26T00:48:14Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "blanderstrudel",
+        "displayName": "BlanderStrudel"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_blanderstrudel-440x248.jpg"
+      }
+     }
+    ],
+    "pageInfo": {
+     "hasNextPage": true
+    }
+   }
+  }
+ }
+}

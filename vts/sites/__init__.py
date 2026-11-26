@@ -10,6 +10,8 @@ their site, so that one library holds them all:
     soop:BJID             a SOOP channel          (soop:brainzerg7)
     soop:live:BJID        what it broadcasts now
     soop:vod:NUMBER       one of its past broadcasts
+    twitch:cat:NUMBER     a category (a game): twitch:cat:11989
+    soop:cat:NUMBER       soop:cat:00040001
 """
 
 from vts import rules
@@ -84,6 +86,19 @@ def valid_video_id(s):
     return False
 
 
+def category_id(site, code):
+    return f"{site}:cat:{code}"
+
+
+def valid_category_id(s):
+    """a category of Twitch or SOOP: digits, as each numbers them"""
+    if not isinstance(s, str):
+        return False
+    site, what, code = split(s)
+    return site in _CHANNEL and what == "cat" and code.isascii() and \
+        code.isdigit() and 1 <= len(code) <= 20
+
+
 def sql_filter(site, column):
     """an SQL condition keeping the rows of @site, by the id in @column"""
     if site is None:
@@ -105,6 +120,16 @@ class Site:
 
     def find(self, query):
         """the channels whose name or id is like @query"""
+        raise NotImplementedError
+
+    def categories(self, query):
+        """the categories (games) named like @query, as Items
+        ("category"), the most watched first"""
+        raise NotImplementedError
+
+    def category(self, ident, after=None, languages=()):
+        """the live streams in the category @ident, the most watched
+        first: a rules.Page (its continuation for the next ones)"""
         raise NotImplementedError
 
     def channel(self, ident):

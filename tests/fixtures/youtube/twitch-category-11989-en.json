@@ -1,0 +1,57 @@
+{
+ "data": {
+  "game": {
+   "id": "11989",
+   "displayName": "StarCraft",
+   "streams": {
+    "edges": [
+     {
+      "cursor": "eyJzIjoxOC43MzY4MTAxNjYwOTQ2NDIsImQiOmZhbHNlLCJ0Ijp0cnVlfQ==",
+      "node": {
+       "title": "make arbiters great again",
+       "viewersCount": 18,
+       "createdAt": "2026-11-26T05:46:52Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "jumperer",
+        "displayName": "Jumperer"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_jumperer-440x248.jpg"
+      }
+     },
+     {
+      "cursor": "eyJzIjoyLjMzODg3MzYxMzIzOTAwMzYsImQiOmZhbHNlLCJ0Ijp0cnVlfQ==",
+      "node": {
+       "title": "Zerg going for A rank!",
+       "viewersCount": 2,
+       "createdAt": "2026-11-26T06:39:30Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "iopg",
+        "displayName": "iopg"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_iopg-440x248.jpg"
+      }
+     },
+     {
+      "cursor": "eyJzIjoxLjIyNDI5MjkyNDQ0NzA1MzMsImQiOmZhbHNlLCJ0Ijp0cnVlfQ==",
+      "node": {
+       "title": "FINISHING STARCRAFT ORIGINAL TERRAN STORY | GOOD EVENING EVERYBODY, BIG STREAM FOR YOU TONIGHT",
+       "viewersCount": 1,
+       "createdAt": "2026-11-26T05:10:03Z",
+       "type": "live",
+       "broadcaster": {
+        "login": "plokch",
+        "displayName": "PLOKCH"
+       },
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_plokch-440x248.jpg"
+      }
+     }
+    ],
+    "pageInfo": {
+     "hasNextPage": false
+    }
+   }
+  }
+ }
+}

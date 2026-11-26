@@ -13,7 +13,8 @@ import urllib.parse
 
 from vts import http, util
 from vts.rules import Item, Page
-from vts.sites import Site, SiteError, channel_id, live_id, soop_id
+from vts.sites import (Site, SiteError, category_id, channel_id, live_id,
+                       soop_id, split, valid_category_id)
 from vts.text import clean
 
 DESC_MAX = 64 * 1024
@@ -232,6 +233,53 @@ class Soop(Site):
         if not c:
             raise SiteError(f"no SOOP channel {ident.split(':', 1)[-1]}")
         return c, self.live_item(a)
+
+    def categories(self, query):
+        a = self._get(self._url(self.d["categories"], query=query.strip()))
+        data = a.get("data") if isinstance(a.get("data"), dict) else {}
+        out = []
+        for c in data.get("list") or ():
+            code = str(c.get("category_no", "")) if isinstance(c, dict) \
+                else ""
+            if not code.isdigit():
+                continue
+            out.append(Item("category", id=category_id("soop", code),
+                            title=clean(c.get("category_name") or code),
+                            views=_count(c.get("view_cnt"), "watching"),
+                            thumbnail=_https(c.get("cate_img"))))
+        return out
+
+    def category(self, ident, after=None, languages=()):
+        if not valid_category_id(ident):
+            raise SiteError(f"not a SOOP category: {ident}")
+        page_no = _int(after) or 1
+        a = self._get(self._url(self.d["category"], page=page_no,
+                                code=split(ident)[2]))
+        data = a.get("data") if isinstance(a.get("data"), dict) else {}
+        # SOOP gives when they started, in Korea's time: now in it too
+        now = (datetime.datetime.now(datetime.timezone.utc) +
+               datetime.timedelta(hours=self.tz)).strftime(
+                   "%Y-%m-%d %H:%M:%S")
+        page = Page()
+        for b in data.get("list") or ():
+            if not isinstance(b, dict) or not soop_id(b.get("user_id")):
+                continue
+            it = self.live_item({
+                "station": {"user_id": b["user_id"],
+                            "user_nick": b.get("user_nick"),
+                            "broad_start": b.get("broad_start")},
+                "broad": {"broad_no": b.get("broad_no"),
+                          "broad_title": b.get("broad_title"),
+                          "current_sum_viewer": b.get("view_cnt"),
+                          "is_password": b.get("is_password"),
+                          "broad_grade": b.get("grade"),
+                          "subscription_only": b.get("subscription_only")},
+                "current_timestamp": now})
+            if it:
+                page.add(it)
+        page.continuation = str(page_no + 1) if data.get("is_more") and \
+            page.items else None
+        return page
 
     def find(self, query):
         """channels like @query: the one whose id it is first"""

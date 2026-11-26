@@ -1,0 +1,192 @@
+{
+ "data": {
+  "searchUsers": {
+   "edges": [
+    {
+     "node": {
+      "login": "starcraft",
+      "displayName": "STARCRAFT",
+      "description": "JOIN THE DOMINION. DEFEND MANKIND.",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/25d6f017-29d2-423c-b887-7750f8851dad-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 323840
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "starcraft_kr",
+      "displayName": "스타크래프트_한국어",
+      "description": "스타크래프트 공식 트위치 채널에 오신 여러분을 환영합니다!",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/64faef06-fe23-402e-a8e7-5c981788d667-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 51485
+      },
+      "stream": null
+     }
+    },
+    {
+     "node": {
+      "login": "starcraft2mc",
+      "displayName": "starcraft2mc",
+      "description": "Это канал студии Maincast, посвящённый StarCraft II. Чтобы посмотреть запись трансляций — нажмите на иконку слева под плеером!",
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/50fa598d-7c97-47d1-9a46-42ba154a2926-profile_image-150x150.png",
+      "followers": {
+       "totalCount": 10122
+      },
+      "stream": null
+     }
+    }
+   ]
+  },
+  "searchCategories": {
+   "edges": [
+    {
+     "node": {
+      "id": "663479541",
+      "displayName": "StarCraft",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/663479541_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "11989",
+      "displayName": "StarCraft",
+      "viewersCount": 111,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/11989_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "490422",
+      "displayName": "StarCraft II",
+      "viewersCount": 334,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/490422-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "1664649323",
+      "displayName": "StarCraft: Remastered",
+      "viewersCount": 4,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1664649323_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "459546",
+      "displayName": "SC2VN: The eSports Visual Novel",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/459546_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "204723225",
+      "displayName": "Star Ally",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/204723225_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "196927899",
+      "displayName": "StarCast",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/196927899-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "624725958",
+      "displayName": "Star Crafter",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/624725958_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "746385321",
+      "displayName": "Stalcraft",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/746385321_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "460421",
+      "displayName": "StarCrawlers",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/460421_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "73494531",
+      "displayName": "Statecraft: Corrupted Democracy",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/73494531_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "735028618",
+      "displayName": "StarDrift Delivery",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/735028618_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "1860529564",
+      "displayName": "Stagdraft",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1860529564-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "871425120",
+      "displayName": "Statecraft",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/871425120-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "1382549714",
+      "displayName": "Starcrest Saga",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1382549714_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "1185491311",
+      "displayName": "Star Rift Saga",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1185491311-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "494734",
+      "displayName": "Stardrift Nomads",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/494734_IGDB-144x192.jpg"
+     }
+    },
+    {
+     "node": {
+      "id": "364024599",
+      "displayName": "StarCrawlers Chimera",
+      "viewersCount": null,
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/364024599_IGDB-144x192.jpg"
+     }
+    }
+   ]
+  }
+ }
+}

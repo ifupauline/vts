@@ -1,0 +1,59 @@
+{
+ "result": 1,
+ "data": {
+  "is_more": false,
+  "offset": 20,
+  "list": [
+   {
+    "category_no": "00040001",
+    "vod_category_no": "00040001",
+    "category_name": "스타크래프트",
+    "view_cnt": 10581,
+    "fixed_tags": [
+     "전략",
+     "시뮬레이션",
+     "RTS"
+    ],
+    "cate_img": "https://admin.img.sooplive.com/category_img/2026/11/25/37116b060cdfb152c.jpg",
+    "is_drops": 0
+   },
+   {
+    "category_no": "00040016",
+    "vod_category_no": "00040016",
+    "category_name": "스타크래프트 II",
+    "view_cnt": 60,
+    "fixed_tags": [
+     "전략",
+     "시뮬레이션",
+     "RTS"
+    ],
+    "cate_img": "https://admin.img.sooplive.com/category_img/2024/10/15/6566670d9018b245d.jpg",
+    "is_drops": 1
+   },
+   {
+    "category_no": "00040144",
+    "vod_category_no": "00040144",
+    "category_name": "스타워즈 제다이: 서바이버",
+    "view_cnt": 0,
+    "fixed_tags": [
+     "어드벤처",
+     "액션"
+    ],
+    "cate_img": "https://admin.img.sooplive.com/category_img/2024/10/15/2597670d90685f3de.jpg",
+    "is_drops": 0
+   },
+   {
+    "category_no": "00040195",
+    "vod_category_no": "00040195",
+    "category_name": "스타듀 밸리",
+    "view_cnt": 0,
+    "fixed_tags": [
+     "인디게임",
+     "시뮬레이션"
+    ],
+    "cate_img": "https://admin.img.sooplive.com/category_img/2024/10/15/7304670d909d29fb6.jpg",
+    "is_drops": 0
+   }
+  ]
+ }
+}
