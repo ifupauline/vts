@@ -74,7 +74,7 @@ def test_settings_screen(app):
     with open(app.conf) as f:
         assert "quality" not in f.read()
     # a Twitch setting, kept under its name
-    t.keys("jjjj", "twitch.quality = best")
+    t.keys("jjjjj", "twitch.quality = best")
     assert t.wait(lambda: "Twitch's live streams" in t.text()), t.text()
     t.keys("\r", "1080")
     assert t.keys("jj\r", "twitch.quality = 720"), t.text()
@@ -129,8 +129,10 @@ def test_alt_digits(app):
 def test_site_favourites(app):
     # 2 on Twitch and SOOP: their favourite channels, as on YouTube
     t = app()
-    t.keys("b2", "No Twitch favourites yet.")
-    assert "› Favourites" in t.line(0), t.line(0)
+    t.keys("b", "No Twitch favourites yet.")
+    t.keys("2", None, 0.2)
+    assert t.wait(lambda: "› Favourites" in t.line(0) and "N adds" in
+                  t.text()), t.text()
     # N adds one by its name, or by a link
     t.keys("N", "Add the Twitch channel")
     assert t.keys("esl_sc2\r", "ESL_SC2 is a favourite"), t.text()
@@ -159,12 +161,16 @@ def test_site_favourites(app):
     assert t.wait(lambda: "ComeBackTV" not in t.text()), t.text()
     assert "ESL_SC2" in t.text()
     # SOOP: a name that isn't exact shows what it finds
-    t.keys("\x1b3", None, 0.3)
-    t.keys("2", "No SOOP favourites yet.")
+    t.keys("\x1b3", "No SOOP favourites yet.")
+    t.keys("2", None, 0.2)
+    assert t.wait(lambda: "› Favourites" in t.line(0) and "N adds" in
+                  t.text()), t.text()
     t.keys("N", "Add the SOOP channel")
     assert t.keys("김정우\r", "f keeps one of these"), t.text()
     assert t.wait(lambda: "effort김정우" in t.line(1)), t.text()
-    t.keys("2", "No SOOP favourites yet.")
+    t.keys("2", None, 0.2)
+    assert t.wait(lambda: "› Favourites" in t.line(0) and "N adds" in
+                  t.text()), t.text()
     # by its id
     t.keys("N", "Add the SOOP channel")
     assert t.keys("momo130\r", "is a favourite"), t.text()

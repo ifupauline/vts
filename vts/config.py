@@ -192,6 +192,10 @@ SETTINGS = (
             "The subtitles shown by default, when a video has them in one "
             "of these languages (written for it, or made by YouTube). u "
             "picks others for one video."),
+    Setting("comments", _one_of(("top", "newest")), "top or newest",
+            "top", "The order comments come in: YouTube's top ones first, or "
+            "the newest first (o switches on the comments; vts comments "
+            "--top or --newest).", ["top", "newest"]),
     Setting("thumbnails", check_thumbnails, "auto, blocks, sixel, kitty, "
             "iterm2 or no", "auto",
             "The pictures of videos in the app (when the terminal is 100 "
@@ -233,6 +237,11 @@ SETTINGS = (
             "starts on it). When a stream has nothing that high, the best "
             "it has plays. audio: the sound only.", list(TWITCH_QUALITIES),
             "Twitch"),
+    Setting("twitch.low_latency", check_bool, "yes or no", "no",
+            "Play Twitch's live streams a few seconds closer to live "
+            "(Streamlink's low-latency mode, mpv's low-latency profile). "
+            "The stream may pause more often on a slow connection.",
+            ["yes", "no"], "Twitch"),
     Setting("soop.quality", _one_of(SOOP_QUALITIES),
             "best, 1080, 720, 540, 360 or audio", "best",
             "The quality SOOP's live streams play in (p plays in it, Q "
@@ -261,12 +270,14 @@ class Config:
         self.downloader = "yt-dlp"
         self.subtitles = ""
         self.thumbnails = "auto"
+        self.comments = "top"
         self.notifications = True
         self.notifier = "notify-send"
         self.downloads = ""
         self.updates = True
         self.start_site = "youtube"
         self.twitch_quality = "best"
+        self.twitch_low_latency = False
         self.soop_quality = "best"
         self.soop_vod_quality = "best"
         # from the command line

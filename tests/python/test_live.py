@@ -81,6 +81,25 @@ def test_live_plays_through_streamlink(fakes, ident, quality, names, url):
     assert p.feeder.poll() is not None
 
 
+@pytest.mark.parametrize("ident", ["twitch:live:esl_sc2",
+                                   "soop:live:brainzerg7"])
+def test_low_latency(fakes, ident):
+    # Twitch's low-latency mode: Streamlink's and mpv's; nothing for SOOP
+    o = player.PlayOptions()
+    o.low_latency = True
+    p = player.Player(FAKE_MPV, None, [live(ident)], o)
+    try:
+        assert wait_for(lambda: entries(fakes, "streamlink") and
+                        entries(fakes, "argv")), fakes.read_text()
+        twitch = ident.startswith("twitch:")
+        assert ("--twitch-low-latency" in entries(fakes, "streamlink")[0]) \
+            == twitch
+        assert ("--profile=low-latency" in entries(fakes, "argv")[0]) == \
+            twitch
+    finally:
+        p.finish()
+
+
 def test_offline_says_so(fakes):
     o = player.PlayOptions()
     p = player.Player(FAKE_MPV, None, [live("twitch:live:offlinechan")], o)

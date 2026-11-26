@@ -109,6 +109,14 @@ def test_comments(vts):
     c = json.loads(vts("comments", "-j", "-r", "mfv0V1SxbNA").out)
     assert len(c) == 20 and c[0]["pinned"] is True
     assert c[0]["replies_list"][0]["kind"] == "comment"
+    # the comments setting: newest first by default, --top for the others
+    top = r.out
+    newest = vts("comments", "--newest", "mfv0V1SxbNA").out
+    assert newest != top
+    assert vts("config", "set", "comments", "newest").code == 0
+    assert vts("comments", "mfv0V1SxbNA").out == newest
+    assert vts("comments", "--top", "mfv0V1SxbNA").out == top
+    assert vts("config", "set", "comments", "oldest").code != 0
 
 
 def test_channel_playlist_feed(vts):

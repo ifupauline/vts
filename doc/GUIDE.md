@@ -290,9 +290,11 @@ updates = yes
 | `downloads` | the folder for downloads, `~/Videos/YouTube` or `/media/disk/videos` | your Downloads folder |
 | `notifications` | yes, no | yes |
 | `thumbnails` | auto, blocks, sixel, kitty, iterm2, no | auto |
+| `comments` | top, newest: the order comments come in | top |
 | `updates` | yes, no | yes |
 | `start_site` | youtube, twitch, soop, last (the one you quit on) | youtube |
 | `twitch.quality` | best, 1080, 720, 480, 360, 160, audio | best |
+| `twitch.low_latency` | yes, no: a few seconds closer to live | no |
 | `soop.quality` | best, 1080, 720, 540, 360, audio: live streams | best |
 | `soop.vod_quality` | the same: past broadcasts | best |
 

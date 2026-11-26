@@ -110,6 +110,8 @@ class PlayOptions:
         self.sound = cfg.sound_quality if cfg else "high"
         # a Twitch or SOOP live stream's: best, a height or audio
         self.live_quality = "best"
+        # Twitch's low-latency mode
+        self.low_latency = bool(cfg.twitch_low_latency) if cfg else False
 
     def copy(self):
         o = PlayOptions()
@@ -235,10 +237,13 @@ class Player:
             except OSError:
                 self.feeder_log = None
                 err = subprocess.DEVNULL
+        extra = []
+        if o.low_latency and sites.site_of(ident) == "twitch":
+            extra.append("--twitch-low-latency")
         try:
             return subprocess.Popen(
                 streamlink_command() + ["--stdout", "--loglevel", "error",
-                                        sites.live_url(ident), names],
+                                        *extra, sites.live_url(ident), names],
                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=err,
                 **platform._popen_flags(True))
         except OSError:
@@ -265,6 +270,8 @@ class Player:
             a.append(f"--log-file={self.log_file}")
         a.append("--force-media-title=" + clean(
             f"{it['channel'] or ''}: {it['title'] or ''}".strip(": ")))
+        if o.low_latency and sites.site_of(it["id"]) == "twitch":
+            a.append("--profile=low-latency")
         if o.live_quality == "audio":
             a.append("--no-video")
         elif o.terminal:

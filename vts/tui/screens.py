@@ -574,11 +574,11 @@ class Comments(Screen):
     hints = "Enter replies  o top/newest  c author's channel  Backspace back"
     draws_entries = True
 
-    def __init__(self, token, title, replies=False):
+    def __init__(self, token, title, replies=False, newest=False):
         super().__init__(title)
         self.token = token
         self.replies = replies
-        self.newest = False
+        self.newest = newest
 
     def entry_rows(self, app, i):
         return 2 + D.wrapped_lines(self.items[i].get("text"), app.cols - 6,
@@ -651,7 +651,7 @@ class Comments(Screen):
 
 
 def comments(app, token, title, replies=False):
-    s = Comments(token, title, replies)
+    s = Comments(token, title, replies, app.cfg.comments == "newest")
     return s if s.reload(app) else None
 
 

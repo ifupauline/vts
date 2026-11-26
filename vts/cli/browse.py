@@ -204,9 +204,11 @@ def print_comment(it, indent):
 
 COMMENTS_USAGE = """\
 Usage: vts comments [OPTION]... VIDEO
-The comments of a video, top ones first.
+The comments of a video, top ones first (or as the comments
+setting says).
 
   -n, --newest   newest first
+  -t, --top      top ones first
   -p, --pages N  read N pages of comments (default 1)
   -r, --replies  with the first replies to each
   -j, --json     print JSON
@@ -215,9 +217,11 @@ The comments of a video, top ones first.
 
 
 def cmd_comments(cfg, argv):
-    opts, args = parse("comments", argv, "np:rjh",
-                       ["newest", "pages=", "replies", "json", "help"])
-    newest = with_replies = as_json = False
+    opts, args = parse("comments", argv, "ntp:rjh",
+                       ["newest", "top", "pages=", "replies", "json",
+                        "help"])
+    newest = cfg.comments == "newest"
+    with_replies = as_json = False
     pages = 1
     for o, v in opts:
         if o in ("-h", "--help"):
@@ -225,6 +229,8 @@ def cmd_comments(cfg, argv):
             return EXIT_OK
         if o in ("-n", "--newest"):
             newest = True
+        elif o in ("-t", "--top"):
+            newest = False
         elif o in ("-p", "--pages"):
             pages = pages_arg("comments", v)
         elif o in ("-r", "--replies"):

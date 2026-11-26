@@ -101,7 +101,12 @@ videos up next (5 by default).
 .TP
 .BI "comments " "\fR[\fP\-n\fR] [\fP\-r\fR] [\fP\-p n\fR] [\fP\-j\fR]\fP video"
 Its comments, top ones first, or newest first with
-.BR \-n ;
+.B \-n
+(or as the
+.B comments
+setting says;
+.B \-t
+for the top ones);
 with
 .BR \-r ,
 the first replies to each.
@@ -413,6 +418,9 @@ Your Downloads folder by default (in the app; the current folder for
 .BR notifications " = " yes | no
 Desktop notifications of new videos.
 .TP
+.BR comments " = " top | newest
+The order comments come in (\fBo\fR switches on them).
+.TP
 .BR thumbnails " = " auto | blocks | sixel | kitty | iterm2 | no
 How the app shows thumbnails: as the terminal's name says (auto, the
 default), in coloured blocks, or in one of the image formats.
@@ -425,6 +433,10 @@ The site vts opens on; last: the one it was on when it quit.
 .TP
 .BR twitch.quality " = " best | 1080 | 720 | 480 | 360 | 160 | audio
 The quality of Twitch's live streams.
+.TP
+.BR twitch.low_latency " = " yes | no
+Twitch's live streams a few seconds closer to live (Streamlink's
+low\-latency mode); they may pause more on a slow connection.
 .TP
 .BR soop.quality ", " soop.vod_quality " = " best | 1080 | 720 | 540 | 360 | audio
 The quality of SOOP's live streams, and of its past broadcasts.
