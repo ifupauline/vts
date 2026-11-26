@@ -5,13 +5,20 @@ from vts.rules import (Item, Page, check_item, fill, valid_channel_id,
                        valid_playlist_id)
 from vts.youtube import INVALID, IO, NOT_FOUND, YouTubeError
 
-TABS = ("videos", "shorts", "live", "playlists", "search")
+TABS = ("videos", "shorts", "live", "playlists", "podcasts", "posts",
+        "search")
+# the end of each tab's address: YouTube answers with the channel's Home
+# for a tab it doesn't have
+TAB_PATHS = {"videos": ("/videos",), "shorts": ("/shorts",),
+             "live": ("/streams", "/live"), "playlists": ("/playlists",),
+             "podcasts": ("/podcasts",), "posts": ("/posts", "/community")}
 
 
 class Browse:
     def __init__(self, kind):
         self.info = Item(kind)
         self.page = Page()
+        self.missing = False  # a channel without the tab asked for
 
     def to_json(self):
         o = self.info.to_json()
@@ -82,6 +89,26 @@ def _browse(yt, fields, section, b):
     fill(r.section(f"{section}.fields"), doc, b.info)
     check_item(b.info)
     r.page_under(f"{section}.results", doc, b.page)
+    post_titles(b.page)
+    return doc
+
+
+def post_titles(page):
+    """a title for each post: its first line, or what it holds"""
+    for it in page.items:
+        if it.kind != "post" or it.get("title"):
+            continue
+        first = (it.get("text") or "").strip().split("\n")[0]
+        if len(first) > 100:
+            first = first[:99] + "\u2026"
+        if not first:
+            if it["video"]:
+                first = it.get("video_title") or "Video"
+            elif it["poll"]:
+                first = "Poll"
+            else:
+                first = "Picture" if it["thumbnail"] else "Post"
+        it.f["title"] = first
 
 
 def get(yt, ident, tab="videos", query=None):
@@ -96,9 +123,16 @@ def get(yt, ident, tab="videos", query=None):
     if tab == "search":
         fields["query"] = query
     b = Browse("channel")
-    _browse(yt, fields, "channel", b)
+    doc = _browse(yt, fields, "channel", b)
     if b.info.get("id") != ident:
         raise YouTubeError(f"no channel {ident}", NOT_FOUND)
+    # a tab the channel doesn't have: nothing, not its Home
+    shown = yt.rules.first("channel.tab", doc)
+    if tab in TAB_PATHS and shown and not shown.rstrip("/").endswith(
+            TAB_PATHS[tab]):
+        b.page.items.clear()
+        b.page.continuation = None
+        b.missing = True
     return b
 
 
@@ -136,4 +170,5 @@ def more(yt, section, b):
         return False
     doc = yt.call("browse", {"continuation": b.page.continuation})
     yt.rules.page_under(f"{section}.results", doc, b.page)
+    post_titles(b.page)
     return True

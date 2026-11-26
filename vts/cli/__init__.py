@@ -90,6 +90,11 @@ def details(it):
         return parts(head, it["handle"], it["subscribers"])
     if it.kind == "playlist":
         return parts(head, it["videos"], it["channel"])
+    if it.kind == "post":
+        return parts(head, it["published"],
+                     f"{it['likes']} likes" if it["likes"] else None,
+                     f"{it['replies']} comments" if it["replies"] else None,
+                     f"video {it['video']}" if it["video"] else None)
     w = None
     if not it.f.get("published") and it.f.get("date"):
         w = util.ago(it.f["date"])
@@ -98,6 +103,12 @@ def details(it):
 
 
 def print_tty(it, cols):
+    if it.kind == "post":
+        # all its text, as comments
+        out(text.fit(details(it), cols))
+        print_indented(it.get("text") or it.get("title"), 2)
+        out()
+        return
     out(text.fit(it.get("title"), cols))
     out("  " + text.fit(details(it), cols - 2))
 

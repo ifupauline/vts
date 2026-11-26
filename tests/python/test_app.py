@@ -52,6 +52,16 @@ def commands(log):
         return [e["command"] for e in map(json.loads, f) if "command" in e]
 
 
+def down_to(t, about):
+    """down the Settings to the one explained so"""
+    for _ in range(60):
+        if about in t.text():
+            return
+        os.write(t.fd, b"j")
+        t.pump(None, 0.1)
+    assert t.wait(lambda: about in t.text()), t.text()
+
+
 def test_settings_screen(app):
     t = app()
     assert t.keys("4", "Saved in"), t.text()
@@ -62,9 +72,8 @@ def test_settings_screen(app):
     for section in ("General", "YouTube"):
         assert t.wait(lambda: any(t.line(y).strip() == section
                                   for y in range(30))), t.text()
-    # quality, the 3rd of YouTube's: from a menu, written in the file
-    t.keys("jjjjjjjjj", "quality = 1080")
-    assert t.wait(lambda: "highest quality" in t.text())
+    # quality: from a menu, written in the file
+    down_to(t, "The highest quality videos play in")
     t.keys("\r", "best")
     assert t.keys("gj\r", "quality = 2160"), t.text()
     with open(app.conf) as f:
@@ -74,8 +83,7 @@ def test_settings_screen(app):
     with open(app.conf) as f:
         assert "quality" not in f.read()
     # a Twitch setting, kept under its name
-    t.keys("jjjjj", "twitch.quality = best")
-    assert t.wait(lambda: "Twitch's live streams" in t.text()), t.text()
+    down_to(t, "The quality Twitch's live streams play in")
     t.keys("\r", "1080")
     assert t.keys("jj\r", "twitch.quality = 720"), t.text()
     with open(app.conf) as f:
@@ -176,6 +184,23 @@ def test_site_favourites(app):
     assert t.keys("momo130\r", "is a favourite"), t.text()
     assert t.wait(lambda: "effort김정우" in t.text() and "momo130" in
                   t.text()), t.text()
+
+
+def test_dislikes(app):
+    # asked while the page shows, when the setting says so
+    t = app()
+    t.keys("/")
+    t.keys("https://www.youtube.com/watch?v=dQw4w9WgXcQ\r", None, 0.5)
+    assert t.wait(lambda: "Never Gonna" in t.text()), t.text()
+    t.pump(None, 1.5)
+    assert "dislikes" not in t.text()
+    t.keys("q", None, 0.5)
+    with open(app.conf, "a") as f:
+        f.write("dislikes = yes\n")
+    t = app()
+    t.keys("/")
+    t.keys("https://www.youtube.com/watch?v=dQw4w9WgXcQ\r", None, 0.5)
+    assert t.wait(lambda: " likes · 412K dislikes" in t.text()), t.text()
 
 
 def test_start_site(app):
@@ -306,6 +331,38 @@ def test_recent_searches(app):
     # nothing typed yet: the recent ones
     assert t.wait(lambda: "↺ linus torvalds" in t.text()), t.text()
     assert t.keys("\t\r", "Search: linus torvalds"), t.text()
+
+
+def test_channel_posts(app, env):
+    # Tab goes through a channel's tabs, posts and podcasts included
+    t = app()
+    t.keys("/")
+    assert t.keys("@kurzgesagt\r", "Kurzgesagt", 10), t.text()
+    assert t.wait(lambda: "Videos  Shorts  Live  Playlists  Podcasts  Posts"
+                  in t.text()), t.text()
+    t.keys("[", None, 0.3)
+    # posts: their text in full, likes and comments over it
+    assert t.wait(lambda: "likes · " in t.text() and " comments" in
+                  t.text()), t.text()
+    t.keys("[", None, 0.3)
+    assert t.wait(lambda: "This channel has no podcasts." in t.text()), \
+        t.text()
+    # the tabs Tab goes through: a setting
+    t.keys("4", "Saved in")
+    for _ in range(30):
+        if "channel_tabs = " in t.text() and "▌channel_tabs" in t.text():
+            break
+        os.write(t.fd, b"j")
+        t.pump(None, 0.1)
+    assert t.wait(lambda: "posts (what it writes" in t.text()), t.text()
+    t.keys("\r", "channel_tabs (a space")
+    t.keys("\x15videos,posts\r", None, 0.5)
+    assert t.wait(lambda: "channel_tabs = videos,posts" in t.text()), \
+        t.text()
+    t.keys("1/", None, 0.3)
+    assert t.keys("@kurzgesagt\r", "Kurzgesagt", 10), t.text()
+    assert t.wait(lambda: "Videos  Posts" in t.text() and "Shorts" not in
+                  t.line(4)), t.text()
 
 
 def test_search_links(app):
@@ -499,6 +556,31 @@ def test_downloads_screen(app):
     t.keys("-", "Remove it from the list?")
     t.keys("j\r", None, 0.5)
     assert t.wait(lambda: "x.mkv" not in t.text()), t.text()
+
+
+def test_download_all(app):
+    # D on a playlist: all of it, in a folder of its own, what was
+    # downloaded before skipped
+    t = app()
+    t.keys("/")
+    t.keys("https://www.youtube.com/playlist?list="
+           "PLFs4vir_WsTxontcYm5ctqp89cNBJKNrs\r", None, 0.5)
+    assert t.wait(lambda: "› The Existential Crisis" in t.line(0)), t.text()
+    t.keys("D", "Download all of")
+    t.keys("\r", "Downloading all of")
+    # the top bar: which video of how many
+    assert t.wait(lambda: "3/3 " in t.line(0) or "1/3 " in t.line(0), 10), \
+        t.line(0)
+    assert t.pump("(1 of 3 couldn't be: Private video)", 15), t.text()
+    with open(app.log) as f:
+        dl = [json.loads(ln)["argv"] for ln in f if '"argv"' in ln and
+              "--yes-playlist" in ln][0]
+    assert dl[-1] == ("https://www.youtube.com/playlist?list="
+                      "PLFs4vir_WsTxontcYm5ctqp89cNBJKNrs"), dl
+    assert "--ignore-errors" in dl and "--download-archive" in dl
+    assert dl[dl.index("--download-archive") + 1].endswith("downloaded.txt")
+    out = dl[dl.index("-o") + 1]
+    assert os.path.basename(os.path.dirname(out)) != "Downloads", out
 
 
 def test_notification_buttons(tmp_path, vts, env):

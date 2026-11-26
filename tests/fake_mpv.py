@@ -56,6 +56,23 @@ def main():
         fail = os.environ.get("FAKE_DL_FAIL_FILE")
         steps = int(os.environ.get("FAKE_DL_STEPS", "4"))
         print("[youtube] Extracting URL: " + args[-1], flush=True)
+        if "--yes-playlist" in args:
+            # a whole playlist: three videos, the second private (yt-dlp
+            # goes on with --ignore-errors, and ends with 1)
+            for n in (1, 2, 3):
+                print(f"[download] Downloading item {n} of 3", flush=True)
+                if n == 2:
+                    print("ERROR: [youtube] aaaaaaaaaaa: Private video",
+                          flush=True)
+                    continue
+                print(f"[download] Destination: v{n}.webm", flush=True)
+                for i in range(3):
+                    print(f"vts-progress {i * 100000} NA 200000 1000.0 "
+                          f"{2 - i}", flush=True)
+                    time.sleep(0.2)
+                print(f"[Merger] Merging formats into \"v{n}.mkv\"",
+                      flush=True)
+            return 1
         if fail and os.path.exists(fail):
             # as yt-dlp does, after a progress line
             print("ERROR: \r[youtube] dQw4w9WgXcQ: Video unavailable",

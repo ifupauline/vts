@@ -194,6 +194,17 @@ class Handler(BaseHTTPRequestHandler):
             with lock:
                 rules[0] = body if body else None
             self.send(200, "ok")
+        elif url.path == "/votes":
+            # Return YouTube Dislike: one video it knows
+            vid = urllib.parse.parse_qs(url.query).get("videoId", [""])[0]
+            if vid == "dQw4w9WgXcQ":
+                self.send(200, json.dumps({
+                    "id": vid, "likes": 18900000, "dislikes": 412345,
+                    "rating": 4.9, "viewCount": 1700000000,
+                    "deleted": False}),
+                    [("Content-Type", "application/json")])
+            else:
+                self.send(404, '{"title": "Not Found"}')
         elif url.path == "/latest-commit":
             # vts's latest version on "GitHub"
             with lock:

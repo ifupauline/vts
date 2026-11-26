@@ -14,10 +14,13 @@ browsing.
   live streams (a red LIVE before their title, SOON for those to come),
   the same filters (upload date, duration, type, features, sort order)
   and suggestions while you type.
-- **The video page.** Description, chapters, comments and replies, and
-  the videos up next.
-- **Channels and playlists.** Their Videos, Shorts, Live and Playlists
-  tabs, and search inside a channel.
+- **The video page.** Description, chapters, comments (top or newest
+  first) and replies, the videos up next, and dislikes if you want them
+  (an estimate of Return YouTube Dislike).
+- **Channels and playlists.** Their Videos, Shorts, Live, Playlists,
+  Podcasts and Posts tabs (you choose which), and search inside a
+  channel. `D` downloads a whole playlist or a channel's videos, each in
+  a folder of its own, skipping what you already have.
 - **Watch in mpv.** Quality, subtitles, speed, sound only (in high,
   medium or low quality), a queue that
   plays on, live streams, the video inside the terminal, and every video
@@ -72,6 +75,7 @@ In the app, `?` shows the keys. The main ones:
 | `w` `+` `A`         | Watch later, add to a playlist, add to what plays |
 | `c` `f` `y`         | the channel, favourite it, copy the link          |
 | `C` `t` `D`         | on a video: comments, chapters, whole description |
+| `D`                 | on a playlist or a channel: download all of it (the channel's tab) |
 | Space `<` `>` `x`   | while playing: pause, previous, next, stop        |
 | `,` `.` `9` `0` `m` | while playing: back, forward 10 s, volume, mute   |
 | `T` `V`             | while playing: a chapter, go on in another quality |
@@ -222,6 +226,7 @@ sends nothing anywhere: no account, no telemetry.
 | vts updating itself: the newer version to install when you quit (`vts-pending`), the one installed (`vts-commit`), what happened, said at the next start (`self-update.json`) | `%LOCALAPPDATA%\vts` |
 | Cache, safe to delete: thumbnails (`thumbs`), the latest rules (`rules.json`) and descriptions of Twitch and SOOP (`twitch.json`, `soop.json`), YouTube's web client version (`client`), when updates last ran (`checked-*`), yt-dlp's version (`yt-dlp-version`), the app's log (`vts.log`), mpv's (`mpv.log`) and Streamlink's (`streamlink.log`) | `%LOCALAPPDATA%\vts\cache` |
 | Downloads and recordings of live streams | your Downloads folder, or the `downloads` setting |
+| What `D` downloaded, to skip it next time (`downloads_skip`) | `%LOCALAPPDATA%\vts\downloaded.txt` |
 | The program | `%USERPROFILE%\.local\bin\vts.exe`, and its Python environment in pipx's folder (`py -m pipx environment` says where), Streamlink (for Twitch's and SOOP's live streams) inside it |
 | Check of new videos, only after `vts check --install` | a task named `vts-check` in Task Scheduler |
 
@@ -242,6 +247,7 @@ Nothing else: no service, nothing at startup.
 | Cache, safe to delete (the same files as on Windows) | `~/.cache/vts` |
 | mpv's connection while a video plays, removed after | `$XDG_RUNTIME_DIR/vts` |
 | Downloads and recordings of live streams | `~/Downloads`, or the `downloads` setting |
+| What `D` downloaded, to skip it next time | `~/.local/share/vts/downloaded.txt` |
 | The program | `~/.local/bin/vts`, and its Python environment in pipx's folder (`pipx environment` says where), Streamlink inside it |
 | Check of new videos, only after `vts check --install` | `~/.config/systemd/user/vts-check.service` and `vts-check.timer` |
 

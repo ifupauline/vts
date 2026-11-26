@@ -188,6 +188,21 @@ def check_youtube_live(vts, env):
     has(live[0], "id", "title", "views")
 
 
+def check_posts_podcasts(vts, env):
+    """a channel's Posts and Podcasts tabs"""
+    c = run(vts, env, "channel", "--json", "-t", "posts", "@LinusTechTips")
+    if c is None:
+        return
+    at_least(c["items"], 3, "posts")
+    for p in c["items"]:
+        has(p, "id", "title", "published", "channel_id")
+    c = run(vts, env, "channel", "--json", "-t", "podcasts", "@lexfridman")
+    if c is None:
+        return
+    at_least(c["items"], 1, "podcasts")
+    has(c["items"][0], "id", "title", "videos")
+
+
 def check_playlist(vts, env):
     p = run(vts, env, "playlist", "--json", PLAYLIST)
     if p is None:
@@ -317,7 +332,8 @@ def check_soop(vts, env):
 
 
 CHECKS = [check_search, check_filters, check_video, check_chapters,
-          check_comments, check_channel, check_youtube_live, check_playlist,
+          check_comments, check_channel, check_youtube_live,
+          check_posts_podcasts, check_playlist,
           check_feed, check_suggest, check_doctor, check_twitch, check_soop]
 
 

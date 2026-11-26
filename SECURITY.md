@@ -28,8 +28,9 @@ assumes everything coming from the network is hostile:
   exact format before use, and the addresses given to mpv and yt-dlp are
   built by vts from them, so an answer can't slip in an option or
   another site. Text in desktop notifications has its markup escaped.
-- **Network.** HTTPS only to YouTube, i.ytimg.com, GitHub, and Twitch's
-  and SOOP's public APIs and pictures (an `https`
+- **Network.** HTTPS only to YouTube, i.ytimg.com, GitHub, Twitch's
+  and SOOP's public APIs and pictures, and, only with `dislikes = yes`,
+  returnyoutubedislikeapi.com (the id of each video opened) (an `https`
   request is never redirected to `http`); answers are size-limited, and
   timeouts and retries are bounded. Thumbnail addresses are made from
   video identifiers, not taken from answers.

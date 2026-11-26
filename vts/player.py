@@ -20,7 +20,8 @@ import time
 
 from vts import log, platform, sites
 from vts.config import QUALITY_AUDIO, QUALITY_BEST, SOUND_QUALITIES
-from vts.rules import Item, valid_video_id
+from vts.rules import (Item, valid_channel_id, valid_playlist_id,
+                       valid_video_id)
 from vts.text import clean
 
 CONNECT_TIME = 20.0  # how long mpv may take to open its socket
@@ -571,6 +572,9 @@ class Progress:
         self.speed = 0.0  # bytes a second, 0 if unknown
         self.eta = -1  # seconds left, -1 if unknown
         self.files = 0  # files begun (a video and its sound: 2)
+        self.item = 0  # a whole playlist or channel: the video under way
+        self.items = 0  # of how many
+        self.failed = 0  # videos that couldn't be downloaded
         self.finishing = False  # joining, converting: after the downloads
         self.error = ""  # yt-dlp's last error
         self.file = None  # the last file named
@@ -599,6 +603,16 @@ class Progress:
             if not self.files:
                 self.files = 1
             return True
+        m = re.match(r"\[download\] Downloading (?:item|video) (\d+) of "
+                     r"(\d+)", line)
+        if m:
+            # the next video of a playlist
+            self.item, self.items = int(m.group(1)), int(m.group(2))
+            self.files = 0
+            self.done = self.total = self.speed = 0
+            self.eta = -1
+            self.finishing = False
+            return True
         if line.startswith("[download] Destination:"):
             self.files += 1
             self.done = self.total = self.speed = 0
@@ -621,19 +635,52 @@ class Progress:
             return True
         if line.startswith("ERROR: "):
             self.error = clean(line[7:])[:159]
+            self.failed += 1
             return True
         return False
 
 
+class Whole:
+    """a whole playlist or channel tab to download: its address, the
+    folder of its own it goes in (None: the downloads folder), the file
+    where yt-dlp notes what it downloaded, to skip it next time (or None)"""
+
+    def __init__(self, url, subfolder=None, archive=None):
+        self.url = url
+        self.subfolder = subfolder
+        self.archive = archive
+
+
+def whole_url(it, tab=None):
+    """the address of a YouTube playlist, or of a channel's tab"""
+    if it.kind == "playlist" and valid_playlist_id(it["id"]):
+        return f"https://www.youtube.com/playlist?list={it['id']}"
+    if it.kind == "channel" and valid_channel_id(it["id"]) and tab in (
+            "videos", "shorts", "live"):
+        page = "streams" if tab == "live" else tab
+        return f"https://www.youtube.com/channel/{it['id']}/{page}"
+    raise ValueError("not a playlist or a channel's tab")
+
+
 def download_args(ytdlp, folder, items, quality, audio_format=None,
-                  quiet=False, sound="high"):
+                  quiet=False, sound="high", whole=None):
     if quality == QUALITY_AUDIO and audio_format and \
             audio_format not in AUDIO_FORMATS:
         raise ValueError(audio_format)
     if sound not in SOUND_QUALITIES:
         raise ValueError(sound)
-    a = [ytdlp, "--no-playlist", "-f", ytdl_format(quality), "-o",
-         os.path.join(folder, "%(title)s [%(id)s].%(ext)s")]
+    if whole:
+        # all of it, on past the videos that can't be had (private ones)
+        where = os.path.join(folder, whole.subfolder) if whole.subfolder \
+            else folder
+        a = [ytdlp, "--yes-playlist", "--ignore-errors", "-f",
+             ytdl_format(quality), "-o",
+             os.path.join(where, "%(title)s [%(id)s].%(ext)s")]
+        if whole.archive:
+            a += ["--download-archive", whole.archive]
+    else:
+        a = [ytdlp, "--no-playlist", "-f", ytdl_format(quality), "-o",
+             os.path.join(folder, "%(title)s [%(id)s].%(ext)s")]
     sort = ytdl_sort(quality, sound)
     if sort:
         a += ["-S", sort]
@@ -648,7 +695,7 @@ def download_args(ytdlp, folder, items, quality, audio_format=None,
             a += ["--audio-format", audio_format, "--audio-quality", rate]
     # nothing after this is an option, whatever it looks like
     a.append("--")
-    a += [video_url(it) for it in items]
+    a += [whole.url] if whole else [video_url(it) for it in items]
     return a
 
 
@@ -672,7 +719,7 @@ class Download:
     """a download in the background, its progress read from yt-dlp"""
 
     def __init__(self, ytdlp, folder, item, quality, audio_format=None,
-                 sound="high"):
+                 sound="high", whole=None):
         path = platform.find_program(ytdlp)
         if not path:
             raise FileNotFoundError(ytdlp)
@@ -680,6 +727,7 @@ class Download:
         self.folder = folder
         self.quality = quality
         self.audio_format = audio_format
+        self.whole = whole
         self.progress = Progress()
         self.status = None
         self.cancelled = False
@@ -687,7 +735,7 @@ class Download:
         self._lines = queue.Queue()
         self.proc = subprocess.Popen(
             download_args(path, folder, [item], quality, audio_format, True,
-                          sound),
+                          sound, whole),
             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT, **platform._popen_flags(True))
         self._reader = threading.Thread(target=self._read, daemon=True)
@@ -740,7 +788,10 @@ class Download:
         return self.status == 0 and not self.cancelled
 
     def file(self):
-        """the file made, as best yt-dlp said it"""
+        """the file made, as best yt-dlp said it (a whole playlist: its
+        folder)"""
+        if self.whole:
+            return os.path.join(self.folder, self.whole.subfolder or "")
         f = self.progress.file
         if f and self.audio_format and self.quality == QUALITY_AUDIO:
             base, _ = os.path.splitext(f)

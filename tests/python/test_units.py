@@ -8,7 +8,7 @@ import pytest
 from conftest import FIXTURES
 
 from vts import config, feed, rules, search, text, update, util
-from vts.rules import Page, Rules
+from vts.rules import Item, Page, Rules
 
 FFFD = "\ufffd"
 
@@ -135,7 +135,7 @@ def test_builtin():
     ('{"version": 1, "items": [{"renderer": "x", "kind": "video",'
      ' "fields": {"title": ["a"]}}], "continuation_renderer": "c"}',
      "no id field"),
-    ('{"version": 1, "items": [{"renderer": "x", "kind": "song",'
+    ('{"version": 1, "items": [{"renderer": "x", "kind": 3,'
      ' "fields": {"id": ["a"]}}], "continuation_renderer": "c"}', "item 0"),
     ('{"version": 1, "items": [], "continuation_renderer": "c",'
      ' "revision": "soon"}', "revision"),
@@ -510,3 +510,46 @@ def test_every_package_installed():
              for d, _, files in os.walk(os.path.join(root, "vts"))
              if "__init__.py" in files}
     assert found == listed
+
+
+def test_download_whole():
+    # D: a playlist or a channel's tab, all of it, into a folder of its own
+    from vts import player
+    pl = Item("playlist", id="PLFs4vir_WsTxontcYm5ctqp89cNBJKNrs")
+    url = player.whole_url(pl)
+    assert url == ("https://www.youtube.com/playlist?list="
+                   "PLFs4vir_WsTxontcYm5ctqp89cNBJKNrs")
+    c = Item("channel", id="UCsXVk37bltHxD1rDPwtNM8Q")
+    assert player.whole_url(c, "live").endswith("/streams")
+    assert player.whole_url(c, "shorts").endswith(
+        "UCsXVk37bltHxD1rDPwtNM8Q/shorts")
+    for bad in ((c, "posts"), (c, None), (Item("video", id="x" * 11), None)):
+        with pytest.raises(ValueError):
+            player.whole_url(*bad)
+    a = player.download_args("yt-dlp", "/dl", [], 720, whole=player.Whole(
+        url, "Existential", "/data/downloaded.txt"))
+    assert "--no-playlist" not in a and "--yes-playlist" in a
+    assert a[a.index("-o") + 1] == os.path.join(
+        "/dl", "Existential", "%(title)s [%(id)s].%(ext)s")
+    assert a[a.index("--download-archive") + 1] == "/data/downloaded.txt"
+    assert a[-2:] == ["--", url]
+    a = player.download_args("yt-dlp", "/dl", [], 720,
+                             whole=player.Whole(url))
+    assert "--download-archive" not in a
+    assert a[a.index("-o") + 1] == os.path.join("/dl",
+                                                "%(title)s [%(id)s].%(ext)s")
+    # yt-dlp's words: which video of how many
+    p = player.Progress()
+    p.line("[download] Downloading item 2 of 40")
+    assert (p.item, p.items, p.files) == (2, 40, 0)
+
+
+def test_rules_kinds_to_come():
+    # a kind of result a newer vts knows: its rule left alone, the rest used
+    r = Rules('{"version": 1, "items": [{"renderer": "songRenderer", '
+              '"kind": "song", "fields": {"id": ["songId"]}}, '
+              '{"renderer": "videoRenderer", "kind": "video", '
+              '"fields": {"id": ["videoId"]}}], "continuation_renderer": "c"}')
+    p = r.page({"a": [{"songRenderer": {"songId": "abc"}},
+                      {"videoRenderer": {"videoId": "dQw4w9WgXcQ"}}]}, Page())
+    assert [it.kind for it in p.items] == ["video"]

@@ -122,13 +122,16 @@ def video_arg(cmd, args):
     return ident
 
 
-def print_video(v, related):
+def print_video(v, related, dislikes=None):
+    from vts.dislikes import short
     it = v.info
     out(it.get("title"))
     out(parts(it["channel"], it["handle"], it["subscribers"]))
     likes = it["likes"]
     out(parts("LIVE" if "live" in it.f else None, it["views"], it["date"],
-              f"{likes} likes" if likes else None))
+              f"{likes} likes" if likes else None,
+              f"{short(dislikes)} dislikes" if dislikes is not None
+              else None))
     out(f"https://www.youtube.com/watch?v={it.get('id')}")
     if it["description"]:
         out()
@@ -148,8 +151,9 @@ def print_video(v, related):
 
 INFO_USAGE = """\
 Usage: vts info [OPTION]... VIDEO
-The video page: title, channel, views, date, likes,
-description, chapters and the videos that come next.
+The video page: title, channel, views, date, likes (and
+dislikes, with the dislikes setting), description, chapters
+and the videos that come next.
 VIDEO is its id or any YouTube link to it.
 
   -r, --related N  show N videos up next (default 5)
@@ -180,10 +184,17 @@ def cmd_info(cfg, argv):
     except YouTubeError as e:
         log.err(str(e))
         return EXIT_FAIL
+    dis = None
+    if cfg.dislikes and not cfg.offline:
+        from vts import dislikes
+        dis = dislikes.get(ident)
     if as_json:
-        print_json(v.to_json())
+        o = v.to_json()
+        if dis is not None:
+            o["dislikes"] = dis
+        print_json(o)
     else:
-        print_video(v, related)
+        print_video(v, related, dis)
     return EXIT_OK
 
 
@@ -317,10 +328,12 @@ def show_browse(yt, section, b, pages, as_json):
 
 CHANNEL_USAGE = """\
 Usage: vts channel [OPTION]... CHANNEL
-A channel's videos, Shorts, live streams or playlists.
-CHANNEL is its id (UC...), its handle (@name) or a link.
+A channel's videos, Shorts, live streams, playlists, podcasts
+or posts. CHANNEL is its id (UC...), its handle (@name) or a
+link.
 
-  -t, --tab TAB      videos (default), shorts, live, playlists
+  -t, --tab TAB      videos (default), shorts, live, playlists,
+                     podcasts, posts
   -s, --search WORDS search the channel
   -p, --pages N      read N pages (default 1)
   -j, --json         print JSON
@@ -340,9 +353,9 @@ def cmd_channel(cfg, argv):
             sys.stdout.write(CHANNEL_USAGE)
             return EXIT_OK
         if o in ("-t", "--tab"):
-            if v not in ch.TABS[:4]:
-                print("vts channel: --tab: videos, shorts, live or playlists",
-                      file=sys.stderr)
+            if v not in ch.TABS or v == "search":
+                print("vts channel: --tab: videos, shorts, live, playlists, "
+                      "podcasts or posts", file=sys.stderr)
                 raise Usage()
             tab = v
         elif o in ("-s", "--search"):
@@ -362,6 +375,8 @@ def cmd_channel(cfg, argv):
     except YouTubeError as e:
         log.err(str(e))
         return EXIT_FAIL
+    if b.missing:
+        log.warn(f"{b.info.get('title') or args[0]} has no {tab} tab")
     return show_browse(yt, "channel", b, pages, as_json)
 
 

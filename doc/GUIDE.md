@@ -134,11 +134,29 @@ On any video in a list:
 
 A **video page** shows the description (`D` for all of it), the number
 of chapters (`t` to pick one and play from there), comments (`C`; `o`
-switches between top and newest, Enter opens the replies) and the
-videos up next.
+switches between top and newest, and `comments = newest` puts the
+newest first from the start; Enter opens the replies) and the videos up
+next. With `dislikes = yes`, it also shows how many disliked the video:
+YouTube hides that number, so it comes from Return YouTube Dislike, a
+public service that estimates it (it then learns which videos you open,
+nothing else).
 
-A **channel** has its tabs (Videos, Shorts, Live, Playlists: Tab or
-`[`/`]` to switch) and `/` searches inside it.
+A **channel** has its tabs (Videos, Shorts, Live, Playlists, Podcasts,
+Posts: Tab or `[`/`]` to switch) and `/` searches inside it. Posts are
+what the channel writes for its viewers, shown in full, with a line for
+what they hold (a picture, a poll, a video: Enter opens it).
+`channel_tabs = videos,live,posts` keeps only the tabs you want, in
+their order. A channel without one of them (no podcasts) says so.
+
+`D` downloads **all of a playlist**, or all of a channel's Videos,
+Shorts or Live tab (on its Playlists or Podcasts tab, the one chosen),
+in the quality you pick from the menu: one job that goes through them,
+the top bar showing which video of how many. Each goes into a folder of
+its own named after it (`downloads_folders = no` puts them with the
+others), and vts notes what it downloaded so that the next `D` on the
+same playlist only gets the new videos (`downloads_skip = no` to get
+them all again). Videos that can't be had (private ones) are skipped
+and counted in the message at the end.
 
 While a video plays, mpv has its own window and you keep browsing: the
 top bar shows the position. Space pauses, `,` and `.` go back and
@@ -291,6 +309,10 @@ updates = yes
 | `notifications` | yes, no | yes |
 | `thumbnails` | auto, blocks, sixel, kitty, iterm2, no | auto |
 | `comments` | top, newest: the order comments come in | top |
+| `dislikes` | yes, no: dislikes on the video page (Return YouTube Dislike) | no |
+| `channel_tabs` | a channel's tabs to show, with commas | videos,shorts,live,playlists,podcasts,posts |
+| `downloads_folders` | yes, no: `D` puts a playlist in a folder of its own | yes |
+| `downloads_skip` | yes, no: `D` skips what it downloaded before | yes |
 | `updates` | yes, no | yes |
 | `start_site` | youtube, twitch, soop, last (the one you quit on) | youtube |
 | `twitch.quality` | best, 1080, 720, 480, 360, 160, audio | best |

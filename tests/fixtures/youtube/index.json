@@ -297,6 +297,24 @@
         "hl": "en"
       },
       "file": "channel-videos.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "EgVwb3N0c_IGBAoCSgA=",
+        "hl": "en"
+      },
+      "file": "channel-posts.json"
+    },
+    {
+      "endpoint": "browse",
+      "match": {
+        "browseId": "UCsXVk37bltHxD1rDPwtNM8Q",
+        "params": "Eghwb2RjYXN0c_IGBQoDugEA",
+        "hl": "en"
+      },
+      "file": "channel-podcasts.json"
     }
   ]
 }

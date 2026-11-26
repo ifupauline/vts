@@ -112,7 +112,7 @@ with
 the first replies to each.
 .TP
 .BI "channel " "\fR[\fP\-t tab\fR] [\fP\-s words\fR] [\fP\-p n\fR] [\fP\-j\fR]\fP channel"
-A channel's videos, shorts, live streams or playlists
+A channel's videos, shorts, live streams, playlists, podcasts or posts
 .RI ( tab ),
 or its search results for
 .IR words .
@@ -341,6 +341,10 @@ Go to the channel, make it a favourite, copy the link.
 .BR C " " t " " D
 On a video page: comments, chapters, the whole description.
 .TP
+.B D
+On a playlist or a channel: download all of it (the channel's tab), in
+a folder of its own, skipping what was downloaded before.
+.TP
 .BR Space " " < " " > " " x
 While playing: pause, previous, next, stop.
 .TP
@@ -420,6 +424,20 @@ Desktop notifications of new videos.
 .TP
 .BR comments " = " top | newest
 The order comments come in (\fBo\fR switches on them).
+.TP
+.BR dislikes " = " yes | no
+Show the dislikes of a video, an estimate of Return YouTube Dislike
+(which then learns the id of each video opened).
+.TP
+.BI channel_tabs " = tabs"
+A channel's tabs Tab goes through, with commas: videos, shorts, live,
+playlists, podcasts, posts.
+.TP
+.BR downloads_folders ", " downloads_skip " = " yes | no
+What
+.B D
+downloads goes into a folder of its own; what it downloaded is skipped
+the next time.
 .TP
 .BR thumbnails " = " auto | blocks | sixel | kitty | iterm2 | no
 How the app shows thumbnails: as the terminal's name says (auto, the

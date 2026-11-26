@@ -1,7 +1,7 @@
 {
   "comment": "Where vts finds things in YouTube's answers. Data only: each field lists paths tried in order, the first that gives a value wins. A path is member names and array positions separated by dots; -1 is the last element, * any element, {a/b} keeps going only from a node that has a.b; a final =VALUE only matches that value. Text is read from strings, simpleText, runs and content.",
   "version": 1,
-  "revision": 2026112501,
+  "revision": 2026112601,
   "skip": [
     "adSlotRenderer",
     "promotedSparklesWebRenderer",
@@ -239,6 +239,25 @@
     },
     {
       "renderer": "lockupViewModel",
+      "when": "contentType=LOCKUP_CONTENT_TYPE_PODCAST",
+      "kind": "playlist",
+      "fields": {
+        "id": [
+          "contentId"
+        ],
+        "title": [
+          "metadata.lockupMetadataViewModel.title"
+        ],
+        "videos": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.overlays.*.thumbnailOverlayBadgeViewModel.thumbnailBadges.0.thumbnailBadgeViewModel.text"
+        ],
+        "thumbnail": [
+          "contentImage.collectionThumbnailViewModel.primaryThumbnail.thumbnailViewModel.image.sources.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "lockupViewModel",
       "when": "contentType=LOCKUP_CONTENT_TYPE_VIDEO",
       "kind": "video",
       "fields": {
@@ -274,6 +293,47 @@
         ],
         "thumbnail": [
           "contentImage.thumbnailViewModel.image.sources.-1.url"
+        ]
+      }
+    },
+    {
+      "renderer": "backstagePostRenderer",
+      "kind": "post",
+      "fields": {
+        "id": [
+          "postId"
+        ],
+        "channel": [
+          "authorText"
+        ],
+        "channel_id": [
+          "authorEndpoint.browseEndpoint.browseId"
+        ],
+        "text": [
+          "contentText"
+        ],
+        "published": [
+          "publishedTimeText"
+        ],
+        "likes": [
+          "voteCount"
+        ],
+        "replies": [
+          "actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text"
+        ],
+        "video": [
+          "backstageAttachment.videoRenderer.videoId"
+        ],
+        "video_title": [
+          "backstageAttachment.videoRenderer.title"
+        ],
+        "poll": [
+          "backstageAttachment.pollRenderer.totalVotes"
+        ],
+        "thumbnail": [
+          "backstageAttachment.backstageImageRenderer.image.thumbnails.-1.url",
+          "backstageAttachment.postMultiImageRenderer.images.0.backstageImageRenderer.image.thumbnails.-1.url",
+          "backstageAttachment.videoRenderer.thumbnail.thumbnails.-1.url"
         ]
       }
     }
@@ -413,8 +473,13 @@
       "shorts": "EgZzaG9ydHPyBgUKA5oBAA==",
       "live": "EgdzdHJlYW1z8gYECgJ6AA==",
       "playlists": "EglwbGF5bGlzdHPyBgoKCEIGCgIQaCIA",
+      "podcasts": "Eghwb2RjYXN0c_IGBQoDugEA",
+      "posts": "EgVwb3N0c_IGBAoCSgA=",
       "search": "EgZzZWFyY2jyBgQKAloA"
     },
+    "tab": [
+      "contents.twoColumnBrowseResultsRenderer.tabs.*.tabRenderer.{selected}.endpoint.commandMetadata.webCommandMetadata.url"
+    ],
     "fields": {
       "id": [
         "metadata.channelMetadataRenderer.externalId"

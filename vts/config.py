@@ -96,6 +96,17 @@ def check_subtitles(v):
     return v
 
 
+CHANNEL_TABS = ("videos", "shorts", "live", "playlists", "podcasts", "posts")
+
+
+def check_channel_tabs(v):
+    """ "videos,live,posts": a channel's tabs to show, in their order"""
+    want = [t.strip().lower() for t in v.split(",") if t.strip()]
+    if not want or any(t not in CHANNEL_TABS for t in want):
+        raise BadValue("expected some of " + ",".join(CHANNEL_TABS))
+    return ",".join(t for t in CHANNEL_TABS if t in want)
+
+
 def check_bool(v):
     b = util.parse_bool(v)
     if b is None:
@@ -196,6 +207,17 @@ SETTINGS = (
             "top", "The order comments come in: YouTube's top ones first, or "
             "the newest first (o switches on the comments; vts comments "
             "--top or --newest).", ["top", "newest"]),
+    Setting("dislikes", check_bool, "yes or no", "no",
+            "Show how many dislike a video (an estimate of Return YouTube "
+            "Dislike, a public service: YouTube hides them). yes sends the "
+            "id of each video you open (nothing else) to "
+            "returnyoutubedislikeapi.com.", ["yes", "no"]),
+    Setting("channel_tabs", check_channel_tabs,
+            "some of " + ", ".join(CHANNEL_TABS) + ", with commas",
+            ",".join(CHANNEL_TABS),
+            "The tabs of a channel Tab goes through: its videos, Shorts, "
+            "live streams, playlists, podcasts and posts (what it writes "
+            "for its viewers).", None),
     Setting("thumbnails", check_thumbnails, "auto, blocks, sixel, kitty, "
             "iterm2 or no", "auto",
             "The pictures of videos in the app (when the terminal is 100 "
@@ -220,6 +242,15 @@ SETTINGS = (
             "your Downloads folder", "Where d (and `vts download` without "
             "-d) puts what it downloads. It is made if it doesn't exist.",
             section="General"),
+    Setting("downloads_folders", check_bool, "yes or no", "yes",
+            "D downloads a whole playlist or channel: into a folder of its "
+            "own, named after it, in the downloads folder. no: with the "
+            "other downloads.", ["yes", "no"], "General"),
+    Setting("downloads_skip", check_bool, "yes or no", "yes",
+            "Note what D downloaded (in vts's data folder), so that "
+            "downloading the same playlist or channel again only gets the "
+            "videos it didn't, even if the files were moved since.",
+            ["yes", "no"], "General"),
     Setting("updates", check_bool, "yes or no", "yes",
             "Once a day, fetch the latest description of YouTube's, "
             "Twitch's and SOOP's pages (so that vts keeps working when "
@@ -271,9 +302,13 @@ class Config:
         self.subtitles = ""
         self.thumbnails = "auto"
         self.comments = "top"
+        self.dislikes = False
+        self.channel_tabs = ",".join(CHANNEL_TABS)
         self.notifications = True
         self.notifier = "notify-send"
         self.downloads = ""
+        self.downloads_folders = True
+        self.downloads_skip = True
         self.updates = True
         self.start_site = "youtube"
         self.twitch_quality = "best"

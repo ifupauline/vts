@@ -14,7 +14,7 @@ import time
 from vts import config, log, platform, player, sites, update, util
 from vts import text as T
 from vts.library import EXISTS, WATCH_LATER, LibError, Library
-from vts.rules import BadRules, valid_channel_id
+from vts.rules import BadRules, Item, valid_channel_id
 from vts.tui import draw as D
 from vts.youtube import Client, YouTubeError
 
@@ -108,6 +108,10 @@ def live_label(q):
     return {"best": "best", "audio": "sound only"}.get(q, f"{q}p")
 
 
+# a channel's tabs, in "Download all of Kurzgesagt, videos"
+TAB_LABELS = {"videos": "videos", "shorts": "Shorts", "live": "live streams"}
+
+
 class DownloadJob:
     def __init__(self, dl, item, folder, label):
         self.dl = dl
@@ -131,6 +135,8 @@ class DownloadJob:
              else f"{p.done / 1e6:.1f} MB")
         if p.files > 1:
             s += f" (part {p.files})"
+        if p.items > 1:
+            s = f"{p.item}/{p.items} " + s
         if p.speed > 0:
             s += f" {p.speed / 1e6:.1f} MB/s"
         if p.eta >= 0:
@@ -175,6 +181,7 @@ HELP = (
     "  T  go to a chapter   V  another quality   u  other subtitles",
     "On a video page: C comments  t chapters  D whole description",
     "On a channel: Tab next tab, / search in it, f favourite",
+    "On a playlist, a channel: D downloads all of it (or of the tab)",
     "In your lists, History, Favourites, Downloads: - or Delete removes",
     "In Favourites: N add a channel, i import, e export",
     "In Settings: Enter change, d the default, Update now, Check now",
@@ -1212,32 +1219,12 @@ class App:
         if sites.is_live(it["id"]):
             self.record(it)
             return
-        qs = player.QUALITIES[:-1]
-        names = [f"Video, {player.quality_name(q)}" for q in qs] + \
-            list(self.SOUND_NAMES)
-        cur = (len(qs) if self.cfg.quality == config.QUALITY_AUDIO
-               else qs.index(self.cfg.quality) if self.cfg.quality in qs
-               else 0)
-        pick = self.choose("Download", names, cur)
-        if pick < 0:
+        how = self.choose_download("Download")
+        if how is None:
             return
-        sound = "high"
-        name = names[pick]
-        if pick < len(qs):
-            quality, fmt = qs[pick], None
-        else:
-            quality, fmt = config.QUALITY_AUDIO, self.SOUND[pick - len(qs)]
-            sound = self.choose_sound(self.cfg.sound_quality)
-            if sound is None:
-                return
-            name += f", {sound} quality"
-        try:
-            folder = self.cfg.downloads_dir()
-        except OSError:
-            folder = None
+        quality, fmt, sound, name = how
+        folder = self.downloads_folder()
         if not folder:
-            self.say("the folder for downloads can't be made: see downloads "
-                     "in the settings", True)
             return
         try:
             dl = player.Download(self.cfg.downloader, folder, it, quality,
@@ -1251,6 +1238,85 @@ class App:
         self.downloads.append(DownloadJob(dl, it, folder, name))
         self.say(f"Downloading ({name}): the top bar follows it")
 
+    def choose_download(self, title):
+        """(quality, sound format, sound quality, its name), from a menu;
+        None if nothing was chosen"""
+        qs = player.QUALITIES[:-1]
+        names = [f"Video, {player.quality_name(q)}" for q in qs] + \
+            list(self.SOUND_NAMES)
+        cur = (len(qs) if self.cfg.quality == config.QUALITY_AUDIO
+               else qs.index(self.cfg.quality) if self.cfg.quality in qs
+               else 0)
+        pick = self.choose(title, names, cur)
+        if pick < 0:
+            return None
+        sound = "high"
+        name = names[pick]
+        if pick < len(qs):
+            return qs[pick], None, sound, name
+        sound = self.choose_sound(self.cfg.sound_quality)
+        if sound is None:
+            return None
+        return (config.QUALITY_AUDIO, self.SOUND[pick - len(qs)], sound,
+                f"{name}, {sound} quality")
+
+    def downloads_folder(self):
+        try:
+            folder = self.cfg.downloads_dir()
+        except OSError:
+            folder = None
+        if not folder:
+            self.say("the folder for downloads can't be made: see downloads "
+                     "in the settings", True)
+        return folder
+
+    def download_all(self, it, tab=None):
+        """D: all the videos of a playlist, or of a channel's tab, in one
+        go (yt-dlp goes through them)"""
+        if not it or sites.site_of(it["id"]) != "youtube":
+            self.say("D downloads a whole YouTube playlist or channel", True)
+            return
+        try:
+            url = player.whole_url(it, tab)
+        except ValueError:
+            self.say("D downloads a whole playlist, or a channel's videos, "
+                     "Shorts or live streams", True)
+            return
+        what = it["title"] or it["id"]
+        if tab:
+            what += f", {TAB_LABELS.get(tab, tab)}"
+        how = self.choose_download(f"Download all of {what}")
+        if how is None:
+            return
+        quality, fmt, sound, name = how
+        folder = self.downloads_folder()
+        if not folder:
+            return
+        archive = None
+        if self.cfg.downloads_skip:
+            d = platform.data_dir()
+            if d:
+                platform.mkdirs(d)
+                archive = os.path.join(d, "downloaded.txt")
+        whole = player.Whole(url, player.file_name(what) if
+                             self.cfg.downloads_folders else None, archive)
+        owner = it["channel"] or (it["title"] if it.kind == "channel"
+                                  else None)
+        job_it = Item(it.kind, id=it["id"], title=what, channel=owner)
+        try:
+            dl = player.Download(self.cfg.downloader, folder, job_it,
+                                 quality, fmt, sound, whole)
+        except FileNotFoundError:
+            self.say(f"{self.cfg.downloader} is not installed", True)
+            return
+        except OSError:
+            self.say(f"{self.cfg.downloader} didn't start", True)
+            return
+        self.downloads.append(DownloadJob(dl, job_it, folder, name))
+        self.say(f"Downloading all of {what} ({name}): the top bar follows "
+                 "it" + (", what was downloaded before is skipped" if archive
+                         else ""))
+
     def poll_downloads(self):
         for job in list(self.downloads):
             if job.dl.running():
@@ -1263,6 +1329,23 @@ class App:
                 self.recorded(job)
             elif job.dl.cancelled:
                 self.say(f"Download stopped: {job.title}")
+            elif job.dl.whole and p.items:
+                # some videos of a playlist may not be had: said, the rest
+                # kept
+                got = max(0, p.item - p.failed) if p.item else 0
+                # "[youtube] abc: Private video": the reason
+                why = p.error.split(": ", 1)[-1] if p.error.startswith(
+                    "[") else p.error
+                self.say(f"✓ Downloaded {job.title}"
+                         + (f" ({p.failed} of {p.items} couldn't be: {why})"
+                            if p.failed else "") + f", in {job.dl.file()}",
+                         bool(p.failed and not got), DONE_MESSAGE_TIME)
+                try:
+                    self.lib.download_add(job.item, job.dl.file(),
+                                          job.dl.quality ==
+                                          config.QUALITY_AUDIO)
+                except LibError as e:
+                    log.warn(f"downloads: {e}")
             elif job.dl.status and p.error:
                 # the reason first: a title can fill the line
                 self.say(f"Download failed, {p.error}: {job.title}", True,
@@ -1422,6 +1505,8 @@ class App:
             self.add_to_list(it)
         elif key == "d":
             self.download(it)
+        elif key == "D" and it and it.kind == "playlist":
+            self.download_all(it)
         elif key == "y":
             self.copy_link(it)
         elif key == "c":

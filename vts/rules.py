@@ -19,11 +19,12 @@ SEG_MAX = 127
 # how deep results are looked for: YouTube's answers go about 40 deep
 WALK_DEPTH = 200
 
-KINDS = ("video", "short", "channel", "playlist", "comment")
+KINDS = ("video", "short", "channel", "playlist", "comment", "post")
 FIELDS = ("id", "title", "channel", "channel_id", "duration", "views",
           "published", "thumbnail", "description", "handle", "subscribers",
           "videos", "live", "upcoming", "date", "likes", "text", "replies",
-          "replies_token", "pinned", "creator", "start_ms")
+          "replies_token", "pinned", "creator", "start_ms", "video",
+          "video_title", "poll")
 # texts that keep their line breaks
 MULTILINE = ("description", "text")
 # fields that are only there or not
@@ -178,7 +179,9 @@ class Rules:
         self._cont = doc["continuation_renderer"]
         self._by_renderer = {}
         for it in items:
-            self._by_renderer.setdefault(it["renderer"], []).append(it)
+            # a kind of result a newer vts knows: left for it
+            if it["kind"] in KINDS:
+                self._by_renderer.setdefault(it["renderer"], []).append(it)
 
     def section(self, dotted):
         return _get(self.doc, dotted)
@@ -319,7 +322,8 @@ def _check_item(it, n):
     fields = it.get("fields")
     when = it.get("when")
     if (not isinstance(it.get("renderer"), str) or
-            it.get("kind") not in KINDS or not isinstance(fields, dict) or
+            not isinstance(it.get("kind"), str) or
+            not isinstance(fields, dict) or
             (when is not None and not isinstance(when, str))):
         raise BadRules(f"item {n}: needs renderer, kind and fields")
     # fields this program doesn't know are left for newer programs
@@ -479,7 +483,7 @@ def check_item(item):
         ok = valid_video_id(ident)
     elif k == "channel":
         ok = valid_channel_id(ident)
-    elif k == "comment":
+    elif k in ("comment", "post"):
         ok = valid_comment_id(ident)
     else:
         ok = valid_playlist_id(ident)
@@ -487,6 +491,8 @@ def check_item(item):
         return False
     if "channel_id" in f and not valid_channel_id(f["channel_id"]):
         del f["channel_id"]
+    if "video" in f and not valid_video_id(f["video"]):
+        del f["video"]
     # "//yt3.ggpht.com/..." means https; anything else but https goes
     thumb = f.get("thumbnail")
     if thumb is not None:

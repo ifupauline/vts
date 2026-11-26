@@ -6,6 +6,7 @@ the Favourites and the Settings.
 """
 
 import curses
+import threading
 import os
 
 from vts import channel as ch
@@ -455,6 +456,7 @@ class Video(Screen):
         self.ident = ident
         self.v = None
         self.full = False
+        self.dislikes = None  # asked while the page shows
 
     def reload(self, app):
         app.busy("Loading the video...")
@@ -463,6 +465,12 @@ class Video(Screen):
         except YouTubeError as e:
             app.failed(e)
             return False
+        if app.cfg.dislikes and not app.cfg.offline:
+            from vts import dislikes
+
+            def ask():
+                self.dislikes = dislikes.get(self.ident)
+            threading.Thread(target=ask, daemon=True).start()
         # the list is the videos that come next
         self.set_page(self.v.related)
         self.title = self.v.info.get("title")
@@ -485,6 +493,9 @@ class Video(Screen):
         b += f"{it.get('views')} · {it.get('date')}"
         if it["likes"]:
             b += f" · {it['likes']} likes"
+        if self.dislikes is not None:
+            from vts.dislikes import short
+            b += f" · {short(self.dislikes)} dislikes"
         if self.v.chapters:
             b += f" · {len(self.v.chapters)} chapters (t)"
         m = app.mark(it)
@@ -657,19 +668,70 @@ def comments(app, token, title, replies=False):
 
 # --- a channel ---------------------------------------------------------------
 
-TAB_NAMES = ("Videos", "Shorts", "Live", "Playlists", "Search")
+TAB_NAMES = {"videos": "Videos", "shorts": "Shorts", "live": "Live",
+             "playlists": "Playlists", "podcasts": "Podcasts",
+             "posts": "Posts", "search": "Search"}
+POST_LINES = 8  # the most lines of a post's text shown
 
 
 class Channel(Screen):
     hints = ("Tab next tab  / search it  f favourite  Enter open  p play  "
-             "P play all")
+             "P play all  D download all")
 
-    def __init__(self, ident):
+    def __init__(self, ident, tabs=None):
         super().__init__("Channel")
         self.ident = ident
-        self.tab = "videos"
+        # the tabs Tab goes through (the channel_tabs setting)
+        self.tabs = [t for t in (tabs or ch.TABS) if t != "search"] or \
+            ["videos"]
+        self.tab = self.tabs[0]
         self.query = None
         self.info = Item("channel")
+
+    @property
+    def draws_entries(self):
+        # posts: their text in full, as comments
+        return self.tab == "posts"
+
+    def entry_rows(self, app, i):
+        it = self.items[i]
+        return 2 + D.wrapped_lines(it.get("text"), app.cols - 6,
+                                   POST_LINES) + (1 if self.attached(it)
+                                                  else 0)
+
+    @staticmethod
+    def attached(it):
+        """what a post holds besides its text, said in a line"""
+        if it["video"]:
+            return f"▶ {it.get('video_title') or 'a video'} (Enter)"
+        if it["poll"]:
+            return f"a poll · {it['poll']}"
+        if it["thumbnail"]:
+            return "a picture"
+        return ""
+
+    def entry_draw(self, app, i, y, rows, selected):
+        it = self.items[i]
+        D.put(y, 0, "▌" if selected else " ")
+        b = " · ".join(x for x in (
+            it.get("published"),
+            f"{it['likes']} likes" if it["likes"] else None,
+            f"{it['replies']} comments" if it["replies"] else None) if x)
+        D.text(y, 2, b, app.cols - 3, curses.A_REVERSE | curses.A_BOLD
+               if selected else curses.A_BOLD)
+        n = D.wrapped(y + 1, 4, it.get("text"), app.cols - 6, POST_LINES)
+        extra = self.attached(it)
+        if extra:
+            D.text(y + 1 + n, 4, extra, app.cols - 6, D.pair(D.C_DIM))
+
+    def selected(self):
+        """a post with a video: the video, for the keys that play"""
+        it = super().selected()
+        if it is not None and it.kind == "post" and it["video"]:
+            return Item("video", id=it["video"],
+                        title=it.get("video_title") or it.get("title"),
+                        channel=it["channel"], channel_id=it["channel_id"])
+        return it
 
     def reload(self, app):
         app.busy("Loading the channel...")
@@ -704,20 +766,25 @@ class Channel(Screen):
         D.text(y, 1, b, app.cols - 2, curses.A_DIM)
         y += 2
         x = 1
-        for t, name in zip(ch.TABS, TAB_NAMES):
-            if t == "search" and self.tab != t:
-                continue
+        for t in self.tabs + (["search"] if self.tab == "search" else []):
+            name = TAB_NAMES[t]
             D.text(y, x, name, app.cols - x, curses.A_REVERSE | curses.A_BOLD
                    if t == self.tab else 0)
             x += len(name) + 2
+        b = getattr(self, "b", None)
+        if b is not None and b.missing:
+            D.text(y + 2, 1, f"This channel has no "
+                   f"{TAB_NAMES[self.tab].lower()}.", app.cols - 2,
+                   curses.A_BOLD)
+            return y + 4
         return y + 2
 
     def key(self, app, key):
         if key in ("\t", "]", "[", "BTAB"):
-            n = 4
-            t = 0 if self.tab == "search" else ch.TABS.index(self.tab)
+            n = len(self.tabs)
+            t = self.tabs.index(self.tab) if self.tab in self.tabs else -1
             t = (t + n - 1) % n if key in ("[", "BTAB") else (t + 1) % n
-            self.tab = ch.TABS[t]
+            self.tab = self.tabs[t]
             self.sel = self.top = 0
             self.reload(app)
         elif key == "/":
@@ -729,6 +796,12 @@ class Channel(Screen):
                 self.reload(app)
         elif key == "f":
             app.favourite(self.ident, self.info["title"], self.info["handle"])
+        elif key == "D":
+            # this tab's videos, or the playlist chosen in it
+            if self.tab in ("playlists", "podcasts"):
+                app.download_all(super().selected())
+            else:
+                app.download_all(self.info, self.tab)
         else:
             return False
         return True
@@ -737,7 +810,7 @@ class Channel(Screen):
 def channel(app, ident):
     if not valid_channel_id(ident):
         return None
-    s = Channel(ident)
+    s = Channel(ident, app.cfg.channel_tabs.split(","))
     return s if s.reload(app) else None
 
 
@@ -745,7 +818,8 @@ def channel(app, ident):
 
 
 class Playlist(Screen):
-    hints = "Enter open  p play  P play from here on  w later  ? help"
+    hints = ("Enter open  p play  P play from here on  D download all  w "
+             "later  ? help")
 
     def __init__(self, ident):
         super().__init__("Playlist")
@@ -771,6 +845,12 @@ class Playlist(Screen):
         except YouTubeError as e:
             app.failed(e)
             return True
+
+    def key(self, app, key):
+        if key == "D":
+            app.download_all(self.info)
+            return True
+        return False
 
     def header(self, app, y):
         D.text(y, 1, self.info.get("title"), app.cols - 2, curses.A_BOLD)

@@ -99,6 +99,15 @@ def test_video_page(vts):
     v = json.loads(vts("info", "--json", "dQw4w9WgXcQ").out)
     assert v["id"] == "dQw4w9WgXcQ" and v["comments"] is True
     assert vts("info", "notavideo").code == 2
+    # dislikes: only when the setting asks for them
+    assert "dislikes" not in vts("info", "dQw4w9WgXcQ").out
+    assert vts("config", "set", "dislikes", "yes").code == 0
+    lines = vts("info", "dQw4w9WgXcQ").out.splitlines()
+    assert lines[2].endswith(" likes · 412K dislikes"), lines[2]
+    assert json.loads(vts("info", "-j", "dQw4w9WgXcQ").out)["dislikes"] == \
+        412345
+    # the service doesn't know it: nothing said
+    assert "dislikes" not in vts("info", "mfv0V1SxbNA").out
 
 
 def test_comments(vts):
@@ -117,6 +126,25 @@ def test_comments(vts):
     assert vts("comments", "mfv0V1SxbNA").out == newest
     assert vts("comments", "--top", "mfv0V1SxbNA").out == top
     assert vts("config", "set", "comments", "oldest").code != 0
+
+
+def test_channel_posts_and_podcasts(vts):
+    # posts: their text, likes, comments; a picture or a video in them
+    r = vts("channel", "-t", "posts", "-j", "@kurzgesagt")
+    posts = json.loads(r.out)["items"]
+    assert r.code == 0 and len(posts) == 9, r
+    assert all(p["kind"] == "post" and p["id"].startswith("Ugkx") and
+               p["title"] and p["published"] for p in posts)
+    assert any(p.get("text") for p in posts)
+    assert all(p.get("channel_id") == "UCsXVk37bltHxD1rDPwtNM8Q"
+               for p in posts)
+    r = vts("channel", "-t", "posts", "@kurzgesagt")
+    assert r.out.startswith("post\tUgkx"), r
+    # kurzgesagt has no podcasts: YouTube shows its Home, vts nothing
+    r = vts("channel", "-t", "podcasts", "@kurzgesagt")
+    assert r.code == 0 and r.out == "" and "has no podcasts tab" in r.err, r
+    r = vts("channel", "-t", "search", "@kurzgesagt")
+    assert r.code == 2 and "podcasts or posts" in r.err, r
 
 
 def test_channel_playlist_feed(vts):
